@@ -18,14 +18,19 @@
 
 package io.github.floatingpointmc.client.nextgen.module.impl.render;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.module.Module;
-import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
-
-import java.util.List;
+import io.github.floatingpointmc.client.nextgen.ui.clickui.ClickUI;
 
 public class ClickGUI extends Module {
     public ClickGUI() {
         super("clickgui", Category.RENDER, false);
+        setKey(InputConstants.KEY_RSHIFT);
+    }
+
+    @Override
+    protected void onEnable() {
+        mc.setScreenAndShow(ClickUI.INSTANCE());
     }
 }

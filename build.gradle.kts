@@ -1,27 +1,28 @@
 plugins {
     // This version of Minecraft is not obfuscated, so Loom is set up without remapping.
-    id 'dev.architectury.loom-no-remap' version '1.17-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.5-SNAPSHOT'
-    id 'com.gradleup.shadow' version '9.6.1' apply false
+    id("dev.architectury.loom-no-remap") version "1.17-SNAPSHOT" apply false
+    id("architectury-plugin") version "3.5-SNAPSHOT"
+    id("com.gradleup.shadow") version "9.6.1" apply false
 }
 
 architectury {
-    minecraft = project.minecraft_version
+    minecraft = rootProject.property("minecraft_version").toString()
 }
 
 allprojects {
-    group = rootProject.maven_group
-    version = rootProject.mod_version
+    group = rootProject.property("maven_group").toString()
+    version = rootProject.property("mod_version").toString()
 }
 
 subprojects {
-    apply plugin: 'dev.architectury.loom-no-remap'
-    apply plugin: 'architectury-plugin'
-    apply plugin: 'maven-publish'
+    apply(plugin = "dev.architectury.loom-no-remap")
+    apply(plugin = "architectury-plugin")
+    apply(plugin = "maven-publish")
+    apply(plugin = "java")
+    apply(plugin = "base")
 
-    base {
-        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
-        archivesName = "$rootProject.archives_name-$project.name"
+    configure<BasePluginExtension> {
+        archivesName.set("${rootProject.property("archives_name")}-${project.name}")
     }
 
     repositories {
@@ -30,13 +31,14 @@ subprojects {
         // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
         // See https://docs.gradle.org/current/userguide/declaring_repositories.html
         // for more information about repositories.
+        mavenLocal()
     }
 
     dependencies {
-        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        add("minecraft", "net.minecraft:minecraft:${rootProject.property("minecraft_version")}")
     }
 
-    java {
+    configure<JavaPluginExtension> {
         // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
         // if it is present.
         // If you remove this line, sources will not be generated.
@@ -46,16 +48,16 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_25
     }
 
-    tasks.withType(JavaCompile).configureEach {
-        it.options.release = 25
+    tasks.withType<JavaCompile>().configureEach {
+        options.release.set(25)
     }
 
     // Configure Maven publishing.
-    publishing {
+    configure<PublishingExtension> {
         publications {
-            mavenJava(MavenPublication) {
-                artifactId = base.archivesName.get()
-                from components.java
+            register<MavenPublication>("mavenJava") {
+                artifactId = project.extensions.getByType<BasePluginExtension>().archivesName.get()
+                from(components["java"])
             }
         }
 

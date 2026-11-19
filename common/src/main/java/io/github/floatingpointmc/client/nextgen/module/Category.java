@@ -26,7 +26,7 @@ public enum Category {
     MOVEMENT("movement"),
     RENDER("render"),
     PLAYER("player"),
-    WORLD("world"),
+    WORLD("client"),
     MISC("misc");
 
     public final String identity;

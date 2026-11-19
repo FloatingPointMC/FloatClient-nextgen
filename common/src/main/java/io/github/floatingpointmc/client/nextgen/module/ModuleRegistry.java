@@ -18,7 +18,11 @@
 
 package io.github.floatingpointmc.client.nextgen.module;
 
+import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
+import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
+import io.github.vlouboos.standaloneevent.api.EventHandler;
+import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
@@ -32,12 +36,22 @@ public class ModuleRegistry {
         var implementations = new Object2ReferenceLinkedOpenHashMap<String, Module>();
         var implementationsByCategory = new Object2ReferenceLinkedOpenHashMap<Category, ReferenceSet<Module>>();
         var combatImplementations = new ReferenceLinkedOpenHashSet<Module>();
+        var movementImplementations = new ReferenceLinkedOpenHashSet<Module>();
+        var renderImplementations = new ReferenceLinkedOpenHashSet<Module>();
+        var playerImplementations = new ReferenceLinkedOpenHashSet<Module>();
+        var worldImplementations = new ReferenceLinkedOpenHashSet<Module>();
+        var miscImplementations = new ReferenceLinkedOpenHashSet<Module>();
         add(implementations, combatImplementations,
                 new AntiBot()
         );
+        add(implementations, renderImplementations,
+                new ClickGUI()
+        );
         implementationsByCategory.put(Category.COMBAT, ReferenceSets.unmodifiable(combatImplementations));
+
         modulesByCategory = Object2ReferenceMaps.unmodifiable(implementationsByCategory);
         modules = Object2ReferenceMaps.unmodifiable(implementations);
+        StandaloneEventAPI.getApi().register(ModuleRegistry.class);
     }
 
     public static void init() {
@@ -45,10 +59,20 @@ public class ModuleRegistry {
     }
 
     private static void add(@NotNull Object2ReferenceLinkedOpenHashMap<String, Module> implementations, @NotNull ReferenceLinkedOpenHashSet<Module> implementationsInCategory, @NotNull Module @NotNull ... modules) {
-
+        for (Module module : modules) {
+            implementations.put(module.getIdentity(), module);
+            implementationsInCategory.add(module);
+        }
     }
 
     public static @NotNull ReferenceSet<Module> getByCategory(@NotNull Category category) {
         return modulesByCategory.get(category);
+    }
+
+    @EventHandler
+    public static void onKey(KeyEvent e) {
+        for (Module module : modules.values()) {
+            if (module.getKey() == e.key) module.toggle();
+        }
     }
 }

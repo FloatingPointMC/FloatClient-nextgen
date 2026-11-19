@@ -25,6 +25,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public final class FloatClientNextgen {
     public static final String MOD_ID = "floatclient_nextgen";
+    public static final String VERSION = "0.0.1-SNAPSHOT";
 
     public static void init() {
         log.info("Loading event api...");
@@ -34,5 +35,7 @@ public final class FloatClientNextgen {
         log.info("Loading modules...");
         currentMillis = System.currentTimeMillis();
         ModuleRegistry.init();
+        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+        log.info("Loading config...");
     }
 }

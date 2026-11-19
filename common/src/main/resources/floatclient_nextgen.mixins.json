@@ -1,10 +1,11 @@
 {
   "required": true,
-  "package": "io.github.floatingpointmc.client.nextgen.mixin",
+  "package": "io.github.floatingpointmc.client.nextgen.mixin.impl",
   "compatibilityLevel": "JAVA_25",
   "minVersion": "0.8",
   "client": [
     "AbstractClientPlayerMixin",
+    "KeyMappingMixin",
     "LocalPlayerMixin",
     "MinecraftMixin"
   ],

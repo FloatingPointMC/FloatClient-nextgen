@@ -16,9 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.floatingpointmc.client.nextgen.event.impl.world;
+package io.github.floatingpointmc.client.nextgen.mixin.impl;
 
-import io.github.vlouboos.standaloneevent.api.Event;
+import net.minecraft.world.entity.player.Player;
+import org.spongepowered.asm.mixin.Mixin;
 
-public class TickEvent extends Event {
+@Mixin(Player.class)
+public abstract class PlayerMixin extends AvatarMixin {
 }

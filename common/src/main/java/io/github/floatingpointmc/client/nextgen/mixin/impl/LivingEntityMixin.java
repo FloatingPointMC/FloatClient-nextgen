@@ -16,20 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.floatingpointmc.client.nextgen.mixin;
+package io.github.floatingpointmc.client.nextgen.mixin.impl;
 
-import io.github.floatingpointmc.client.nextgen.event.impl.world.TickEvent;
-import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
-import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(Minecraft.class)
-public class MinecraftMixin {
-    @Inject(method = "tick", at = @At("HEAD"))
-    public void tick(CallbackInfo ci) {
-        StandaloneEventAPI.getApi().call(new TickEvent());
-    }
+@Mixin(LivingEntity.class)
+public abstract class LivingEntityMixin extends EntityMixin {
 }

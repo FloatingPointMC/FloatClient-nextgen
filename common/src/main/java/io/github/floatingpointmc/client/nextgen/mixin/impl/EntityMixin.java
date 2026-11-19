@@ -1,0 +1,39 @@
+/*
+ * FloatClient-nextgen - A free auxiliary mod for Minecraft Java Edition.
+ * Copyright (C) 2026  FloatingPoint-MC
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package io.github.floatingpointmc.client.nextgen.mixin.impl;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+
+@Mixin(Entity.class)
+public abstract class EntityMixin {
+    @Shadow
+    public abstract boolean onGround();
+
+    @Shadow
+    public abstract float getXRot();
+
+    @Shadow
+    public abstract float getYRot();
+
+    @Shadow
+    public abstract Vec3 position();
+}

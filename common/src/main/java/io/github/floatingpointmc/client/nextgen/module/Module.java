@@ -19,7 +19,10 @@
 package io.github.floatingpointmc.client.nextgen.module;
 
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
+import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,10 +32,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Module {
     protected final Minecraft mc = Minecraft.getInstance();
+    @Getter
     private final @NotNull String identity;
+    @Getter
     private final @NotNull Category category;
+    @Getter
     private final boolean toggleable;
+    @Getter
     private final @NotNull ArrayList<Argument<?>> arguments = new ArrayList<>();
+    @Getter
+    private boolean enabled = false;
+    @Getter
+    @Setter
+    private int key = 0;
 
     public Module(@NotNull String identity, @NotNull Category category) {
         this(identity, category, true);
@@ -40,5 +52,29 @@ public class Module {
 
     protected void addArguments(@NotNull Argument<?> @NotNull ... argument) {
         arguments.addAll(List.of(argument));
+    }
+
+    protected void onEnable() {}
+
+    protected void onDisable() {}
+
+    public void setEnabled(boolean enabled) {
+        if (!toggleable) {
+            onEnable();
+            return;
+        }
+        if (enabled && !this.enabled) {
+            this.enabled = true;
+            onEnable();
+            StandaloneEventAPI.getApi().register(this);
+        } else if (!enabled && this.enabled) {
+            StandaloneEventAPI.getApi().unregister(this);
+            onDisable();
+            this.enabled = false;
+        }
+    }
+
+    public void toggle() {
+        setEnabled(!isEnabled());
     }
 }
