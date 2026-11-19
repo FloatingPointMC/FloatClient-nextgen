@@ -1,0 +1,38 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+#issueTrackerURL = ""
+license = "Insert License Here"
+
+[[mods]]
+modId = "floatclient_nextgen"
+version = "${version}"
+displayName = "Float Client"
+authors = "Me!"
+description = '''
+This is an example description! Tell everyone what your mod is about!
+'''
+#logoFile = ""
+
+[[dependencies.floatclient_nextgen]]
+modId = "neoforge"
+type = "required"
+versionRange = "[26.3.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.floatclient_nextgen]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.3,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.floatclient_nextgen]]
+modId = "architectury"
+type = "required"
+versionRange = "[22.0.3,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[mixins]]
+config = "floatclient_nextgen.mixins.json"
