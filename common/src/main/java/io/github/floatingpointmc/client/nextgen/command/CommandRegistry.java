@@ -1,0 +1,59 @@
+/*
+ * FloatClient-nextgen - A free auxiliary mod for Minecraft Java Edition.
+ * Copyright (C) 2026  FloatingPoint-MC
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package io.github.floatingpointmc.client.nextgen.command;
+
+import io.github.floatingpointmc.client.nextgen.event.impl.player.ChatEvent;
+import io.github.vlouboos.standaloneevent.api.EventHandler;
+import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashBigSet;
+import it.unimi.dsi.fastutil.objects.ReferenceSet;
+import it.unimi.dsi.fastutil.objects.ReferenceSets;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+
+public class CommandRegistry {
+    private static final Minecraft mc = Minecraft.getInstance();
+    private static final @NotNull ReferenceSet<Command> commands;
+
+    static {
+        ReferenceSet<Command> cmds = new ReferenceOpenHashBigSet<>();
+        commands = ReferenceSets.unmodifiable(cmds);
+        StandaloneEventAPI.getApi().register(CommandRegistry.class);
+    }
+
+    @EventHandler
+    public static void onChat(@NotNull ChatEvent e) {
+        if (e.message.length() > 1 && e.message.startsWith(".")) {
+            String[] cmd = e.message.substring(1).split(" ");
+            String command = cmd[0];
+            String[] args = Arrays.copyOfRange(cmd, 1, cmd.length);
+            for (Command impl : commands) {
+                if (impl.name.equalsIgnoreCase(command) || impl.alias.contains(command.toLowerCase())) {
+                    impl.execute(args);
+                    return;
+                }
+            }
+            mc.gui.hud.getChat().addClientSystemMessage(Component.literal("No command named '%s' found!".formatted(command)).withColor(TextColor.RED));
+        }
+    }
+}
