@@ -4,9 +4,15 @@
   "compatibilityLevel": "JAVA_25",
   "minVersion": "0.8",
   "client": [
+    "AbstractClientPlayerMixin",
+    "LocalPlayerMixin",
     "MinecraftMixin"
   ],
   "mixins": [
+    "AvatarMixin",
+    "EntityMixin",
+    "LivingEntityMixin",
+    "PlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
