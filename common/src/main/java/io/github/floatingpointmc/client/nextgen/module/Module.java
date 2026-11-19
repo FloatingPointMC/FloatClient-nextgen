@@ -20,25 +20,25 @@ package io.github.floatingpointmc.client.nextgen.module;
 
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.client.Minecraft;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class Module {
-    private final String identity;
-    private final Category category;
-    private final List<Argument<?>> arguments;
+    protected final Minecraft mc = Minecraft.getInstance();
+    private final @NotNull String identity;
+    private final @NotNull Category category;
     private final boolean toggleable;
+    private final @NotNull ArrayList<Argument<?>> arguments = new ArrayList<>();
 
-    public Module(String identity, Category category) {
-        this(identity, category, List.of(), true);
+    public Module(@NotNull String identity, @NotNull Category category) {
+        this(identity, category, true);
     }
 
-    public Module(String identity, Category category, boolean toggleable) {
-        this(identity, category, List.of(), toggleable);
-    }
-
-    public Module(String identity, Category category, List<Argument<?>> arguments) {
-        this(identity, category, arguments, true);
+    protected void addArguments(@NotNull Argument<?> @NotNull ... argument) {
+        arguments.addAll(List.of(argument));
     }
 }

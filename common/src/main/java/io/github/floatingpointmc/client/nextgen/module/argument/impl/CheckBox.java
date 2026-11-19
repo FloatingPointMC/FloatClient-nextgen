@@ -20,6 +20,7 @@ package io.github.floatingpointmc.client.nextgen.module.argument.impl;
 
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.function.Supplier;
 
@@ -30,5 +31,10 @@ public class CheckBox extends Argument<Boolean> {
 
     public CheckBox(@NotNull String identity, boolean value, @NotNull Supplier<Boolean> displayable) {
         super(identity, value, displayable);
+    }
+
+    @Override
+    public @NonNull Boolean getValue() {
+        return super.getValue() && isDisplayable();
     }
 }

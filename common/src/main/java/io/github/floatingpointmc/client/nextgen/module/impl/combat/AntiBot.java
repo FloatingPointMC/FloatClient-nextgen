@@ -25,6 +25,6 @@ import java.util.List;
 
 public class AntiBot extends Module {
     public AntiBot() {
-        super("antibot", Category.COMBAT, List.of());
+        super("antibot", Category.COMBAT);
     }
 }

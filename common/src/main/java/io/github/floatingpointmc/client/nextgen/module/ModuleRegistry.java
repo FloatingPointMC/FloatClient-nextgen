@@ -47,4 +47,8 @@ public class ModuleRegistry {
     private static void add(@NotNull Object2ReferenceLinkedOpenHashMap<String, Module> implementations, @NotNull ReferenceLinkedOpenHashSet<Module> implementationsInCategory, @NotNull Module @NotNull ... modules) {
 
     }
+
+    public static @NotNull ReferenceSet<Module> getByCategory(@NotNull Category category) {
+        return modulesByCategory.get(category);
+    }
 }
