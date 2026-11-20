@@ -23,7 +23,7 @@ import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
 import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IKeyMapping;
-import io.github.floatingpointmc.client.nextgen.util.io.KeyBuffer;
+import io.github.floatingpointmc.client.nextgen.util.io.KeyboardUtil;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -44,8 +44,8 @@ public class MinecraftMixin {
 
     @Inject(method = "handleKeybinds", at = @At("HEAD"), cancellable = true)
     private void onKey(CallbackInfo ci) {
-        while (!KeyBuffer.keys.isEmpty()) {
-            InputConstants.Key key = KeyBuffer.keys.poll();
+        while (!KeyboardUtil.KEY_BUFFER.isEmpty()) {
+            InputConstants.Key key = KeyboardUtil.KEY_BUFFER.poll();
             assert key != null;
             KeyEvent e = new KeyEvent(key.getValue());
             StandaloneEventAPI.getApi().call(e);

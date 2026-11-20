@@ -7,7 +7,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "floatclient_nextgen"
+rootProject.name = "floatclient-nextgen"
 
 include("common")
 include("fabric")

@@ -16,12 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.floatingpointmc.client.nextgen.util.io;
+package io.github.floatingpointmc.client.nextgen.util.player;
 
-import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
+public final class PlayerUtil {
+    private static final Minecraft mc = Minecraft.getInstance();
 
-public class KeyBuffer {
-    public static final ArrayDeque<InputConstants.Key> keys = new ArrayDeque<>();
+    public static void addMessage(@NotNull Component component) {
+        mc.gui.hud.getChat().addClientSystemMessage(Component.literal("[Float] ")
+                .withColor(TextColor.LIGHT_PURPLE)
+                .append(component)
+        );
+    }
 }

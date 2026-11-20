@@ -23,6 +23,6 @@ import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 @AllArgsConstructor
-public class ChatEvent extends Event {
+public final class ChatEvent extends Event {
     public @NotNull String message;
 }

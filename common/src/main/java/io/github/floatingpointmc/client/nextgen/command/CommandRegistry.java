@@ -18,42 +18,46 @@
 
 package io.github.floatingpointmc.client.nextgen.command;
 
+import io.github.floatingpointmc.client.nextgen.command.impl.Bind;
+import io.github.floatingpointmc.client.nextgen.command.impl.Toggle;
 import io.github.floatingpointmc.client.nextgen.event.impl.player.ChatEvent;
+import io.github.floatingpointmc.client.nextgen.util.player.PlayerUtil;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashBigSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
-public class CommandRegistry {
-    private static final Minecraft mc = Minecraft.getInstance();
+public final class CommandRegistry {
     private static final @NotNull ReferenceSet<Command> commands;
 
     static {
-        ReferenceSet<Command> cmds = new ReferenceOpenHashBigSet<>();
-        commands = ReferenceSets.unmodifiable(cmds);
+        ReferenceSet<Command> cmdSet = new ReferenceOpenHashBigSet<>();
+        cmdSet.add(new Bind());
+        cmdSet.add(new Toggle());
+        commands = ReferenceSets.unmodifiable(cmdSet);
         StandaloneEventAPI.getApi().register(CommandRegistry.class);
     }
 
     @EventHandler
     public static void onChat(@NotNull ChatEvent e) {
         if (e.message.length() > 1 && e.message.startsWith(".")) {
+            e.canceled = true;
             String[] cmd = e.message.substring(1).split(" ");
             String command = cmd[0];
             String[] args = Arrays.copyOfRange(cmd, 1, cmd.length);
             for (Command impl : commands) {
-                if (impl.name.equalsIgnoreCase(command) || impl.alias.contains(command.toLowerCase())) {
+                if (impl.aliases.contains(command.toLowerCase())) {
                     impl.execute(args);
                     return;
                 }
             }
-            mc.gui.hud.getChat().addClientSystemMessage(Component.literal("No command named '%s' found!".formatted(command)).withColor(TextColor.RED));
+            PlayerUtil.addMessage(Component.literal("No command named '%s' found!".formatted(command)).withColor(TextColor.RED));
         }
     }
 }

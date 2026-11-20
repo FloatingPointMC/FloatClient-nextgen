@@ -27,6 +27,8 @@ import it.unimi.dsi.fastutil.objects.*;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 @Log4j2
 public class ModuleRegistry {
     private static final @NotNull Object2ReferenceMap<String, Module> modules;
@@ -67,6 +69,10 @@ public class ModuleRegistry {
 
     public static @NotNull ReferenceSet<Module> getByCategory(@NotNull Category category) {
         return modulesByCategory.get(category);
+    }
+
+    public static @NotNull Optional<Module> get(@NotNull String identity) {
+        return Optional.ofNullable(modules.get(identity));
     }
 
     @EventHandler

@@ -40,6 +40,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayerMixin {
 
     @Inject(method = "sendPosition", at = @At("HEAD"))
     private void onSendingPosition(CallbackInfo ci) {
+
         Vec3 position = position();
         PreMotionEvent event = new PreMotionEvent(position.x, position.y, position.z, getYRot(), getXRot(), onGround());
     }

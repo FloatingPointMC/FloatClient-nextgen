@@ -18,6 +18,7 @@
 
 package io.github.floatingpointmc.client.nextgen.module;
 
+import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import lombok.Getter;
@@ -76,5 +77,9 @@ public class Module {
 
     public void toggle() {
         setEnabled(!isEnabled());
+    }
+
+    public @NotNull String getName() {
+        return LanguageManager.get("module." + identity);
     }
 }

@@ -20,7 +20,7 @@ package io.github.floatingpointmc.client.nextgen.mixin.impl;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IKeyMapping;
-import io.github.floatingpointmc.client.nextgen.util.io.KeyBuffer;
+import io.github.floatingpointmc.client.nextgen.util.io.KeyboardUtil;
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,7 +42,7 @@ public class KeyMappingMixin implements IKeyMapping {
 
     @Inject(method = "click", at = @At("HEAD"))
     private static void onKey(InputConstants.Key key, CallbackInfo ci) {
-        KeyBuffer.keys.add(key);
+        KeyboardUtil.KEY_BUFFER.add(key);
     }
 
     @Override

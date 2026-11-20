@@ -19,14 +19,15 @@
 package io.github.floatingpointmc.client.nextgen.command;
 
 import lombok.RequiredArgsConstructor;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 @RequiredArgsConstructor
 public abstract class Command {
-    public final String name;
-    public final List<String> alias;
+    protected final Minecraft mc = Minecraft.getInstance();
+    public final List<String> aliases;
 
     public abstract void execute(@NotNull String @NotNull [] args);
 }
