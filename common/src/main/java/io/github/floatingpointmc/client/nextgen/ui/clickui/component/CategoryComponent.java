@@ -21,10 +21,16 @@ package io.github.floatingpointmc.client.nextgen.ui.clickui.component;
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.ClickUI;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.Colors;
+import io.github.floatingpointmc.client.nextgen.ui.font.Fonts;
 import io.github.floatingpointmc.client.nextgen.util.math.MathUtil;
+import io.github.floatingpointmc.client.nextgen.util.render.RenderUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import org.jetbrains.annotations.NotNull;
 
-public class CategoryComponent {
+public final class CategoryComponent {
     private final Category category;
     private int x, y;
 
@@ -34,7 +40,7 @@ public class CategoryComponent {
         this.y = y;
     }
 
-    public void draw(int mouseX, int mouseY) {
+    public void draw(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int pureWhite = MathUtil.reAlpha(0xD8D8D8, ClickUI.alphaAnimation.calculate());
         int lightWhite = MathUtil.reAlpha(0xFFFFFF, (int) (ClickUI.alphaAnimation.calculate() * 0.06f));
         int pureLight = MathUtil.reAlpha(Colors.LIGHT_THEME, ClickUI.alphaAnimation.calculate());
@@ -44,6 +50,8 @@ public class CategoryComponent {
         int pureExtremeDark = MathUtil.reAlpha(Colors.EXTREME_DARK_THEME, (int) (ClickUI.alphaAnimation.calculate() * 0.88f));
         int background = MathUtil.reAlpha(0xFF100F16, (int) (ClickUI.alphaAnimation.calculate() * 0.72f));
         int currentY = 28;
+        RenderUtil.drawRoundedRect(x, y, x + 100, y + currentY, 10, background);
+        graphics.text(Minecraft.getInstance().font, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite);
 
     }
 

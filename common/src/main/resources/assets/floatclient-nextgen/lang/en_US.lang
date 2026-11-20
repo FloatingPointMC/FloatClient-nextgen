@@ -1,4 +1,10 @@
 lang.name=English (US)
+category.combat=Combat
+category.movement=Movement
+category.render=Render
+category.player=Player
+category.world=World
+category.misc=Misc
 module.aimassist=Aim Assist
 module.aimassist.desc=Force your crosshair on a target.
 module.antibot=Anti Bot

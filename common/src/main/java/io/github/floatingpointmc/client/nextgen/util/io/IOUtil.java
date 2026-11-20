@@ -25,16 +25,20 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class IOUtil {
-    public static JsonObject readFile(@NotNull File file) {
-        StringBuilder builder = new StringBuilder();
+    public static JsonObject readFileToJson(@NotNull File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] bytes = new byte[fis.available()];
-            if (fis.read(bytes) == 0) return new JsonObject();
-            return JsonParser.parseString(new String(bytes)).getAsJsonObject();
+            return JsonParser.parseString(new String(toByte(fis))).getAsJsonObject();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static byte[] toByte(@NotNull InputStream in) throws IOException {
+        byte[] bytes = new byte[in.available()];
+        if (in.read(bytes) < 0) return new byte[0];
+        return bytes;
     }
 }

@@ -18,7 +18,10 @@
 
 package io.github.floatingpointmc.client.nextgen.module;
 
+import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 @AllArgsConstructor
 public enum Category {
@@ -26,8 +29,12 @@ public enum Category {
     MOVEMENT("movement"),
     RENDER("render"),
     PLAYER("player"),
-    WORLD("client"),
+    WORLD("world"),
     MISC("misc");
 
-    public final String identity;
+    private final String identity;
+
+    public @NotNull String getName() {
+        return LanguageManager.get("category." + identity);
+    }
 }

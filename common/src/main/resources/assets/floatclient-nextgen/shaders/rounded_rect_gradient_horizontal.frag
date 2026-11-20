@@ -1,0 +1,18 @@
+#version 120
+
+uniform vec2 rectSize;
+uniform vec4 leftColor;
+uniform vec4 rightColor;
+uniform float radius;
+
+float roundSDF(vec2 p, vec2 b, float r) {
+    return length(max(abs(p) - b, 0.0)) - r;
+}
+
+void main() {
+    float gradientFactor = gl_TexCoord[0].s;
+    vec4 mixedColor = mix(leftColor, rightColor, gradientFactor);
+    vec2 rectHalf = rectSize * .5;
+    float smoothedAlpha = (1.0 - smoothstep(0.0, 1.0, roundSDF(rectHalf - (gl_TexCoord[0].st * rectSize), rectHalf - radius - 1., radius))) * mixedColor.a;
+    gl_FragColor = vec4(mixedColor.rgb, smoothedAlpha);
+}

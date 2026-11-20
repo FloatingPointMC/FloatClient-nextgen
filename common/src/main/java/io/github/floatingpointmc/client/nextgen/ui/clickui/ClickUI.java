@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClickUI extends Screen {
+public final class ClickUI extends Screen {
     private static final @NotNull ClickUI INSTANCE;
     private static final List<CategoryComponent> categories;
     public static @NotNull FunctionUtil<Integer> alphaAnimation = FunctionUtil.done(0);
@@ -64,7 +64,7 @@ public class ClickUI extends Screen {
         int background = MathUtil.reAlpha(0xFF100F16, (int) (alphaAnimation.calculate() * 0.72f));
         // TODO: blur // BlurUtil.blurAll(2, partialTicks);
         graphics.fill(0, 0, width, height, background);
-        categories.forEach(categoryComponent -> categoryComponent.draw(mouseX, mouseY));
+        categories.forEach(categoryComponent -> categoryComponent.draw(graphics, mouseX, mouseY));
     }
 
     // who the fuck is using double here while using int when rendering???
@@ -76,5 +76,10 @@ public class ClickUI extends Screen {
             if (categoryComponent.onMouseClicked(mouseX, mouseY, mouseButton)) return true;
         }
         return true;
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 }

@@ -20,7 +20,7 @@ package io.github.floatingpointmc.client.nextgen.ui.clickui;
 
 import java.awt.*;
 
-public class Colors {
+public final class Colors {
     public static final int MAIN_THEME = new Color(112, 74, 189).getRGB();
     public static final int LIGHT_THEME = new Color(126, 86, 205).getRGB();
     public static final int EXTREME_LIGHT_THEME = new Color(210, 190, 250).getRGB();

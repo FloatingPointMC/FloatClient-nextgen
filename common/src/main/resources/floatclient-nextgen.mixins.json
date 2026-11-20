@@ -6,6 +6,7 @@
   "client": [
     "AbstractClientPlayerMixin",
     "ChatScreenMixin",
+    "GuiGraphicsExtractorMixin",
     "KeyMappingMixin",
     "LocalPlayerMixin",
     "MinecraftMixin"
