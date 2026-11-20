@@ -36,7 +36,7 @@ public record ShaderRenderState(@Nullable RenderPipeline pipeline, @NotNull Text
                                 @Nullable ScreenRectangle scissorArea, @NotNull ScreenRectangle bounds,
                                 @NotNull Consumer<VertexConsumer> geometry,
                                 @Nullable Uniforms uniforms,
-                                @Nullable RenderTarget target) implements GuiElementRenderState {
+                                @Nullable Operation operation) implements GuiElementRenderState {
     @Override
     public void buildVertices(@NotNull VertexConsumer out) {
         geometry.accept(out);
@@ -50,6 +50,16 @@ public record ShaderRenderState(@Nullable RenderPipeline pipeline, @NotNull Text
     public ShaderRenderState(RenderPipeline pipeline, TextureSetup textureSetup, ScreenRectangle scissorArea,
                              ScreenRectangle bounds, Consumer<VertexConsumer> geometry, Uniforms uniforms) {
         this(pipeline, textureSetup, scissorArea, bounds, geometry, uniforms, null);
+    }
+
+    /** Runs between GUI passes. The callback submits exactly this operation's geometry. */
+    @FunctionalInterface
+    public interface Operation {
+        void render(RenderTarget destination, Consumer<RenderTarget> drawGeometry);
+    }
+
+    public ShaderRenderState routed(Operation operation) {
+        return new ShaderRenderState(pipeline, textureSetup, scissorArea, bounds, geometry, uniforms, operation);
     }
 
     /** ARGB modulation and one std140 vec4 in the Parameters block. */

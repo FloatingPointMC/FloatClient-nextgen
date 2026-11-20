@@ -68,9 +68,9 @@ public final class CategoryComponent {
         for (ModuleComponent moduleComponent : moduleComponents) {
             currentY += moduleComponent.getHeight().calculate();
         }
-        BlurUtil.beginKawaseCapture();
-        RenderUtil.drawRoundedRect(graphics, x, y, x + 100, y + currentY, 10, pureExtremeDark);
-        BlurUtil.bloomKawase(2, 3);
+        int bottom = y + currentY;
+        BlurUtil.bloomKawase(graphics, 2, 3,
+                capture -> capture.roundedRect(x, y, x + 100, bottom, 10, pureExtremeDark));
         RenderUtil.drawRoundedRect(graphics, x, y, x + 100, y + currentY, 10, background);
         RenderUtil.drawRoundedOutline(graphics, x, y, x + 100, y + currentY, 10, 1, lightWhite);
         graphics.text(Minecraft.getInstance().font, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite);

@@ -21,7 +21,7 @@ package io.github.floatingpointmc.client.nextgen.util.render;
 import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IGuiGraphicsExtractor;
 import io.github.floatingpointmc.client.nextgen.ui.shader.Shader;
 import lombok.experimental.UtilityClass;
-import com.mojang.blaze3d.pipeline.RenderTarget;
+import io.github.floatingpointmc.client.nextgen.ui.shader.ShaderRenderState;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.jetbrains.annotations.NotNull;
@@ -38,13 +38,14 @@ public class RenderUtil {
     }
 
     public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, int color) {
-        drawRoundedRect(graphics, x, y, x2, y2, radius, color, BlurUtil.currentCaptureTarget());
+        var state = roundedRect(graphics, x, y, x2, y2, radius, color);
+        if (state != null) ((IGuiGraphicsExtractor) graphics).getGuiRenderState().addGuiElement(state);
     }
 
-    public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, int color, RenderTarget target) {
+    static @Nullable ShaderRenderState roundedRect(GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, int color) {
         float width = x2 - x;
         float height = y2 - y;
-        if (width <= 0 || height <= 0) return;
+        if (width <= 0 || height <= 0) return null;
         float fraction = Math.clamp(radius / Math.min(width, height), 0f, 0.5f);
         int left = (int) Math.floor(x);
         int top = (int) Math.floor(y);
@@ -52,16 +53,11 @@ public class RenderUtil {
                 (int) Math.ceil(x + width) - left, (int) Math.ceil(y + height) - top).transformMaxBounds(graphics.pose());
         ScreenRectangle scissor = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
         if (scissor != null) bounds = bounds.intersection(scissor);
-        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return;
-        ((IGuiGraphicsExtractor) graphics).getGuiRenderState()
-                .addGuiElement(ROUNDED_RECT.draw(graphics, x, y, x2, y2, color, fraction, scissor, bounds, target));
+        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return null;
+        return ROUNDED_RECT.draw(graphics, x, y, x2, y2, color, fraction, scissor, bounds);
     }
 
     public static void drawRoundedOutline(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, float thickness, int c) {
-        drawRoundedOutline(graphics, x, y, x2, y2, radius, thickness, c, null);
-    }
-
-    public static void drawRoundedOutline(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, float thickness, int c, @Nullable RenderTarget target) {
         float width = x2 - x;
         float height = y2 - y;
         if (width <= 0 || height <= 0 || thickness <= 0) return;
@@ -77,6 +73,6 @@ public class RenderUtil {
         if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return;
         ((IGuiGraphicsExtractor) graphics).getGuiRenderState()
                 .addGuiElement(ROUNDED_OUTLINE.draw(graphics, x, y, x2, y2, c,
-                        radiusFraction, thicknessFraction, scissor, bounds, target));
+                        radiusFraction, thicknessFraction, scissor, bounds));
     }
 }

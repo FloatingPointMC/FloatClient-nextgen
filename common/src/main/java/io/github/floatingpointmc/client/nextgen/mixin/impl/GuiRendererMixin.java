@@ -25,7 +25,6 @@ import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import io.github.floatingpointmc.client.nextgen.ui.shader.ShaderRenderState;
-import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.DynamicGpuDataStorageMapped;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
@@ -40,8 +39,7 @@ import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -54,18 +52,18 @@ public abstract class GuiRendererMixin {
     @Shadow @Final private List<?> draws;
     @Shadow private RenderPipeline previousPipeline;
     @Unique private ShaderRenderState.Uniforms floatclient$previous;
-    @Unique private RenderTarget floatclient$previousTarget;
+    @Unique private ShaderRenderState.Operation floatclient$previousTarget;
     @Unique private final Map<Object, ShaderRenderState.Uniforms> floatclient$styles = new IdentityHashMap<>();
     @Unique private final Map<Object, GpuBufferSlice> floatclient$colors = new IdentityHashMap<>();
     @Unique private final Map<Object, GpuBufferSlice> floatclient$params = new IdentityHashMap<>();
-    @Unique private final Map<Object, RenderTarget> floatclient$targets = new IdentityHashMap<>();
+    @Unique private final Map<Object, ShaderRenderState.Operation> floatclient$targets = new IdentityHashMap<>();
     @Unique private DynamicGpuDataStorageMapped<ShaderRenderState.Uniforms> floatclient$storage;
     @Unique private GpuBufferSlice floatclient$defaultTransform;
 
     @Inject(method = "addElementToMesh", at = @At("HEAD"))
     private void floatclient$checkBatch(GuiElementRenderState element, CallbackInfo ci) {
         var style = element instanceof ShaderRenderState shader ? shader.uniforms() : null;
-        var target = element instanceof ShaderRenderState shader ? shader.target() : null;
+        var target = element instanceof ShaderRenderState shader ? shader.operation() : null;
         if (!Objects.equals(style, floatclient$previous) || target != floatclient$previousTarget) previousPipeline = null;
         floatclient$previous = style;
         floatclient$previousTarget = target;
@@ -74,22 +72,31 @@ public abstract class GuiRendererMixin {
     @Inject(method = "addElementToMesh", at = @At("RETURN"))
     private void floatclient$recordBatch(GuiElementRenderState element, CallbackInfo ci) {
         if (floatclient$previous != null) floatclient$styles.put(draws.getLast(), floatclient$previous);
-        if (element instanceof ShaderRenderState shader && shader.target() != null) {
-            floatclient$targets.put(draws.getLast(), shader.target());
+        if (element instanceof ShaderRenderState shader && shader.operation() != null) {
+            floatclient$targets.put(draws.getLast(), shader.operation());
         }
     }
 
-    @ModifyArgs(method = "draw", at = @At(value = "INVOKE",
+    @Shadow
+    private void executeDrawRange(Supplier<String> label, RenderTarget target, GpuBufferSlice transform, int first, int end) {
+        throw new AssertionError();
+    }
+
+    @Redirect(method = "draw", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/render/GuiRenderer;executeDrawRange(Ljava/util/function/Supplier;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;II)V"))
-    private void floatclient$selectTarget(Args args) {
-        int first = args.get(3);
-        int end = Math.min((int) args.get(4), draws.size());
-        for (int index = Math.max(0, first); index < end; index++) {
-            RenderTarget selected = floatclient$targets.get(draws.get(index));
-            if (selected != null) {
-                args.set(1, selected);
-                break;
-            }
+    private void floatclient$drawRanges(GuiRenderer renderer, Supplier<String> label, RenderTarget main,
+                                        GpuBufferSlice transform, int first, int end) {
+        if (floatclient$targets.isEmpty()) {
+            executeDrawRange(label, main, transform, first, end);
+            return;
+        }
+        while (first < end) {
+            var operation = floatclient$targets.get(draws.get(first));
+            int start = first++;
+            while (first < end && floatclient$targets.get(draws.get(first)) == operation) first++;
+            int stop = first;
+            if (operation == null) executeDrawRange(label, main, transform, start, stop);
+            else operation.render(main, target -> executeDrawRange(label, target, transform, start, stop));
         }
     }
 
@@ -134,8 +141,6 @@ public abstract class GuiRendererMixin {
 
     @Inject(method = "render", at = @At("RETURN"))
     private void floatclient$finishFrame(CallbackInfo ci) {
-        BlurUtil.flushPendingBloom();
-        BlurUtil.endCaptureFrame();
         floatclient$styles.clear();
         floatclient$colors.clear();
         floatclient$params.clear();

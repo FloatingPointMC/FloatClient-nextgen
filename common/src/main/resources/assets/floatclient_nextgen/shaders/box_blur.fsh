@@ -11,9 +11,11 @@ layout(std140) uniform Parameters {
 
 void main() {
     vec2 stepUV = direction / vec2(textureSize(inTexture, 0));
-    vec4 total = vec4(0.0);
-    for (int i = 0; i <= int(floor(2.0 * radius)); ++i) {
-        total += texture(inTexture, texCoord + (float(i) - radius) * stepUV);
+    vec4 total = texture(inTexture, texCoord);
+    for (int i = 1; i <= int(ceil(radius)); ++i) {
+        vec2 delta = stepUV * float(i);
+        float weight = min(1.0, radius - float(i) + 1.0);
+        total += weight * (texture(inTexture, texCoord - delta) + texture(inTexture, texCoord + delta));
     }
-    fragColor = vec4(total.rgb / (2.0 * radius + 1.0), min(total.a, 1.0));
+    fragColor = total / (2.0 * radius + 1.0);
 }

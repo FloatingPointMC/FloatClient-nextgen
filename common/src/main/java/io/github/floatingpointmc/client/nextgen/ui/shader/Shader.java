@@ -22,7 +22,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.renderpearl.api.pipeline.*;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.resources.Identifier;
@@ -52,10 +51,14 @@ public final class Shader {
     }
 
     public static RenderPipeline positionUvPipeline(String name, BindGroupLayout bindings, ColorTargetState color) {
+        return positionUvPipeline(name, name, bindings, color);
+    }
+
+    public static RenderPipeline positionUvPipeline(String name, String fragment, BindGroupLayout bindings, ColorTargetState color) {
         return RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath("floatclient_nextgen", name))
                 .withVertexShader(Identifier.fromNamespaceAndPath("floatclient_nextgen", "position_uv"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath("floatclient_nextgen", name))
+                .withFragmentShader(Identifier.fromNamespaceAndPath("floatclient_nextgen", fragment))
                 .withBindGroupLayout(bindings)
                 .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
@@ -79,14 +82,13 @@ public final class Shader {
 
     public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2,
                                            int color, float first,
-                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds, @Nullable RenderTarget target) {
-        return draw(graphics, x, y, x2, y2, color, first, 0, scissor, bounds, target);
+                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds) {
+        return draw(graphics, x, y, x2, y2, color, first, 0, scissor, bounds);
     }
 
     public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2,
                                            int color, float first, float second,
-                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds,
-                                           @Nullable RenderTarget target) {
+                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds) {
         Matrix3x2fc snapshot = new Matrix3x2f(graphics.pose());
         return new ShaderRenderState(pipeline, TextureSetup.noTexture(), scissor, bounds, out -> {
             vertex(out, snapshot, x, y, 0, 0);
@@ -95,7 +97,7 @@ public final class Shader {
             vertex(out, snapshot, x, y, 0, 0);
             vertex(out, snapshot, x2, y2, 1, 1);
             vertex(out, snapshot, x2, y, 1, 0);
-        }, new ShaderRenderState.Uniforms(color, first, second, 0, 0), target);
+        }, new ShaderRenderState.Uniforms(color, first, second, 0, 0));
     }
 
     private static void vertex(VertexConsumer out, Matrix3x2fc pose, float x, float y,

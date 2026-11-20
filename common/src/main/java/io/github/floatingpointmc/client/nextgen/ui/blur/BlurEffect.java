@@ -22,7 +22,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 
 public final class BlurEffect implements AutoCloseable {
-    private static final FullscreenPass FILTER = new FullscreenPass("box_blur", ColorTargetState.DEFAULT, true, false);
+    private static final FullscreenPass FILTER = new FullscreenPass("box_blur", ColorTargetState.DEFAULT, false);
     private final EffectTarget swap = new EffectTarget("Float box blur");
 
     public void render(RenderTarget main, float radius) {
@@ -32,8 +32,8 @@ public final class BlurEffect implements AutoCloseable {
         }
         if (radius == 0) return;
         var temp = swap.size(main.width, main.height);
-        FILTER.draw(main, temp, null, false, false, 0, 1, radius, 0);
-        FILTER.draw(temp, main, null, false, false, 1, 0, radius, 0);
+        FILTER.draw(main, temp, null, false, 0, 1, radius, 0);
+        FILTER.draw(temp, main, null, false, 1, 0, radius, 0);
     }
 
     @Override

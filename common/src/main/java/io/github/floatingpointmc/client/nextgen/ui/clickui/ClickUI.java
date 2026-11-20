@@ -63,7 +63,7 @@ public final class ClickUI extends Screen {
     @Override
     public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int background = MathUtil.reAlpha(0xFF100F16, (int) (alphaAnimation.calculate() * 0.52f));
-        BlurUtil.blurAll(2);
+        BlurUtil.blurAll(graphics, 2);
         graphics.fill(0, 0, width, height, background);
         categories.forEach(categoryComponent -> categoryComponent.draw(graphics, mouseX, mouseY));
     }

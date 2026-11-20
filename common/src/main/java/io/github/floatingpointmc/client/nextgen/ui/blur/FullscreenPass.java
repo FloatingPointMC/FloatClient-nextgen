@@ -32,27 +32,29 @@ import org.lwjgl.system.MemoryStack;
 import java.util.Optional;
 
 /** Pass-local bindings for position_uv. Clip-space vertices use identity transforms. */
-final class FullscreenPass {
+public final class FullscreenPass {
     private static final Matrix4f IDENTITY = new Matrix4f();
-    static final Vector4fc LEGACY_CLEAR = new Vector4f(1, 1, 1, 0);
+    static final Vector4fc TRANSPARENT = new Vector4f(0f);
     private static GpuBuffer triangle;
     private static GpuBuffer projection;
     private final String label;
     private final RenderPipeline pipeline;
-    private final boolean parameters;
     private final boolean masked;
 
-    FullscreenPass(String label, ColorTargetState color, boolean parameters, boolean masked) {
-        this.label = label;
-        this.parameters = parameters;
-        this.masked = masked;
-        var layout = Shader.transforms().withUniform("inTexture", UniformType.COMBINED_IMAGE_SAMPLER);
-        if (parameters) layout.withUniform("Parameters", UniformType.UNIFORM_BUFFER);
-        if (masked) layout.withUniform("textureToCheck", UniformType.COMBINED_IMAGE_SAMPLER);
-        pipeline = Shader.positionUvPipeline(label, layout.build(), color);
+    FullscreenPass(String label, ColorTargetState color, boolean masked) {
+        this(label, label, color, masked);
     }
 
-    void draw(RenderTarget input, RenderTarget output, RenderTarget mask, boolean linear, boolean additiveClear,
+    FullscreenPass(String label, String fragment, ColorTargetState color, boolean masked) {
+        this.label = label;
+        this.masked = masked;
+        var layout = Shader.transforms().withUniform("inTexture", UniformType.COMBINED_IMAGE_SAMPLER);
+        layout.withUniform("Parameters", UniformType.UNIFORM_BUFFER);
+        if (masked) layout.withUniform("textureToCheck", UniformType.COMBINED_IMAGE_SAMPLER);
+        pipeline = Shader.positionUvPipeline(label, fragment, layout.build(), color);
+    }
+
+    void draw(RenderTarget input, RenderTarget output, RenderTarget mask, boolean linear,
               float x, float y, float z, float w) {
         if (input == output || mask == output) throw new IllegalArgumentException("Framebuffer feedback");
         var device = RenderSystem.getDevice();
@@ -67,17 +69,17 @@ final class FullscreenPass {
                 projection = device.createBuffer(() -> "Float identity projection", GpuBuffer.USAGE_UNIFORM,
                         IDENTITY.get(stack.malloc(64)));
             }
-            var params = parameters ? encoder.transientMemory().uploadGpu(
+            var params = encoder.transientMemory().uploadGpu(
                     stack.malloc(16).putFloat(x).putFloat(y).putFloat(z).putFloat(w).flip(),
-                    device.getDeviceInfo().limits().minUniformOffsetAlignment(), GpuBuffer.USAGE_UNIFORM) : null;
+                    device.getDeviceInfo().limits().minUniformOffsetAlignment(), GpuBuffer.USAGE_UNIFORM);
             var transform = RenderSystem.getDynamicUniforms().writeTransform(IDENTITY);
             var compiled = RenderSystem.getCompiledPipeline(pipeline);
             try (var pass = encoder.createRenderPass(() -> label, output.getColorTextureView(),
-                    additiveClear ? Optional.of(LEGACY_CLEAR) : Optional.empty())) {
+                    Optional.empty())) {
                 pass.setPipeline(compiled);
                 pass.setUniform("Projection", projection);
                 pass.setUniform("DynamicTransforms", transform);
-                if (parameters) pass.setUniform("Parameters", params);
+                pass.setUniform("Parameters", params);
                 var samplers = RenderSystem.getSamplerCache();
                 pass.setUniform("inTexture", input.getColorTextureView(),
                         samplers.getClampToEdge(linear ? FilterMode.LINEAR : FilterMode.NEAREST));
@@ -88,7 +90,7 @@ final class FullscreenPass {
         }
     }
 
-    static void releaseGeometry() {
+    public static void releaseGeometry() {
         if (triangle != null) triangle.close();
         if (projection != null) projection.close();
         triangle = null;

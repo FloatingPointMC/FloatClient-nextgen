@@ -18,71 +18,80 @@
 
 package io.github.floatingpointmc.client.nextgen.util.render;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
+import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IGuiGraphicsExtractor;
 import io.github.floatingpointmc.client.nextgen.ui.blur.BlurEffect;
+import io.github.floatingpointmc.client.nextgen.ui.blur.FullscreenPass;
 import io.github.floatingpointmc.client.nextgen.ui.blur.KawaseEffect;
-import net.minecraft.client.Minecraft;
+import io.github.floatingpointmc.client.nextgen.ui.shader.ShaderRenderState;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.RenderPipelines;
 
-/** Render-thread operations, called between passes after submitting the source image. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 public final class BlurUtil {
-    private static final BlurEffect BLUR = new BlurEffect();
+    private static final BlurEffect BOX = new BlurEffect();
     private static final KawaseEffect KAWASE = new KawaseEffect();
-    private static boolean pendingBloom;
-    private static int pendingIterations, pendingOffset;
-    private static RenderTarget captureTarget;
-    private static boolean captureActive;
 
     private BlurUtil() {}
 
-    private static RenderTarget getTarget() {
-        return Minecraft.getInstance().gameRenderer.mainRenderTarget();
+    public static void blurAll(GuiGraphicsExtractor graphics, float radius) {
+        if (!(radius >= 0 && radius < (1 << 24))) throw new IllegalArgumentException("Invalid blur radius");
+        if (radius == 0) return;
+        // The renderer executes this command in place of drawing the mesh.
+        var marker = new ShaderRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), null,
+                new ScreenRectangle(0, 0, graphics.guiWidth(), graphics.guiHeight()), out -> {});
+        publish(graphics, List.of(marker), (main, ignored) -> BOX.render(main, radius));
     }
 
-    public static void blurAll(float radius) {
-        BLUR.render(getTarget(), radius);
+    /** A CPU-side list of mask primitives. Nothing is drawn until a filter is submitted. */
+    public static final class Capture {
+        private final GuiGraphicsExtractor graphics;
+        private final List<ShaderRenderState> elements = new ArrayList<>();
+
+        private Capture(GuiGraphicsExtractor graphics) {
+            this.graphics = graphics;
+        }
+
+        public void roundedRect(float x, float y, float x2, float y2, float radius, int argb) {
+            var element = RenderUtil.roundedRect(graphics, x, y, x2, y2, radius, argb);
+            if (element != null) elements.add(element);
+        }
     }
 
-    /** Borrow this cleared destination for subsequent render passes. Finish those passes before filtering. */
-    public static RenderTarget beginKawaseCapture() {
-        if (captureTarget == null) captureTarget = KAWASE.begin(getTarget());
-        captureActive = true;
-        return captureTarget;
+    public static void bloomKawase(GuiGraphicsExtractor graphics, int iterations, int offset, Consumer<Capture> mask) {
+        kawase(graphics, iterations, offset, mask, true);
     }
 
-    /** Target currently selected during GUI extraction, or null for normal GUI output. */
-    public static RenderTarget currentCaptureTarget() {
-        return captureActive ? captureTarget : null;
+    public static void blurKawase(GuiGraphicsExtractor graphics, int iterations, int offset, Consumer<Capture> mask) {
+        kawase(graphics, iterations, offset, mask, false);
     }
 
-    public static void blurKawase(int iterations, int offset) {
-        KAWASE.render(getTarget(), iterations, offset, false);
+    private static void kawase(GuiGraphicsExtractor graphics, int iterations, int offset, Consumer<Capture> mask, boolean bloom) {
+        if (iterations < 1) throw new IllegalArgumentException("Expected at least one Kawase level");
+        var capture = new Capture(graphics);
+        mask.accept(capture);
+        if (capture.elements.isEmpty()) return;
+        publish(graphics, capture.elements, (main, draw) -> {
+            var target = KAWASE.begin(main);
+            draw.accept(target);
+            KAWASE.render(main, target, iterations, offset, bloom);
+        });
     }
 
-    public static void bloomKawase(int iterations, int offset) {
-        pendingIterations = iterations;
-        pendingOffset = offset;
-        pendingBloom = true;
-        captureActive = false;
-    }
-
-    public static void flushPendingBloom() {
-        if (!pendingBloom) return;
-        pendingBloom = false;
-        KAWASE.render(getTarget(), pendingIterations, pendingOffset, true);
-        captureTarget = null;
-    }
-
-    /** Ends extraction capture even when the caller did not request a filter pass. */
-    public static void endCaptureFrame() {
-        captureActive = false;
-        if (!pendingBloom) captureTarget = null;
+    private static void publish(GuiGraphicsExtractor graphics, List<ShaderRenderState> elements, ShaderRenderState.Operation operation) {
+        var state = ((IGuiGraphicsExtractor) graphics).getGuiRenderState();
+        state.nextStratum();
+        for (var element : elements) state.addGuiElement(element.routed(operation));
+        state.nextStratum();
     }
 
     public static void release() {
-        pendingBloom = false;
-        captureTarget = null;
-        captureActive = false;
-        BLUR.close();
+        BOX.close();
         KAWASE.close();
+        FullscreenPass.releaseGeometry();
     }
 }
