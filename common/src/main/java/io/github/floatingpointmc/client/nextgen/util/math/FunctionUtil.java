@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 
-public class FunctionUtil<T extends Number> {
+public final class FunctionUtil<T extends Number> {
     private final long startTime;
     private final Function<Long, T> function;
     private final long duration;

@@ -18,9 +18,7 @@
 
 package io.github.floatingpointmc.client.nextgen.language;
 
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -30,7 +28,7 @@ import java.util.Objects;
 
 public final class Language {
     public final String identity;
-    private final Reference2ReferenceMap<String, String> map;
+    private final Object2ReferenceMap<String, String> map;
 
     public Language(String identity) {
         this.identity = identity;
@@ -41,9 +39,9 @@ public final class Language {
         return map.getOrDefault(key, key);
     }
 
-    private Reference2ReferenceMap<String, String> loadLanguage(@NotNull String identity) {
-        var res = new Reference2ReferenceOpenHashMap<String, String>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(Language.class.getResourceAsStream("/assets/floatclient-nextgen/lang/" + identity + ".lang"))))) {
+    private Object2ReferenceMap<String, String> loadLanguage(@NotNull String identity) {
+        var res = new Object2ReferenceOpenHashMap<String, String>();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(Language.class.getResourceAsStream("/assets/floatclient_nextgen/lang/" + identity + ".lang"))))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 int idx = line.indexOf('=');
@@ -54,6 +52,6 @@ public final class Language {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return Reference2ReferenceMaps.unmodifiable(res);
+        return Object2ReferenceMaps.unmodifiable(res);
     }
 }

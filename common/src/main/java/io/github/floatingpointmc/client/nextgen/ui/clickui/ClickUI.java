@@ -22,6 +22,7 @@ import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.CategoryComponent;
 import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
 import io.github.floatingpointmc.client.nextgen.util.math.MathUtil;
+import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -61,8 +62,8 @@ public final class ClickUI extends Screen {
 
     @Override
     public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        int background = MathUtil.reAlpha(0xFF100F16, (int) (alphaAnimation.calculate() * 0.72f));
-        // TODO: blur // BlurUtil.blurAll(2, partialTicks);
+        int background = MathUtil.reAlpha(0xFF100F16, (int) (alphaAnimation.calculate() * 0.52f));
+        BlurUtil.blurAll(2);
         graphics.fill(0, 0, width, height, background);
         categories.forEach(categoryComponent -> categoryComponent.draw(graphics, mouseX, mouseY));
     }

@@ -16,13 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.floatingpointmc.client.nextgen.fabric.client;
+package io.github.floatingpointmc.client.nextgen.fabric;
 
-import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
 
-public final class ExampleModFabricClient implements ClientModInitializer {
+import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
+
+public final class FloatClientNextgenFabric implements ModInitializer {
     @Override
-    public void onInitializeClient() {
-        // This entrypoint is suitable for setting up client-specific logic, such as rendering.
+    public void onInitialize() {
+        // This code runs as soon as Minecraft is in a mod-load-ready state.
+        // However, some things (like resources) may still be uninitialized.
+        // Proceed with mild caution.
+
+        // Run our common setup.
+        FloatClientNextgen.init();
     }
 }

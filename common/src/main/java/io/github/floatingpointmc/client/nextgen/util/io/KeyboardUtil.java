@@ -25,9 +25,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import lombok.experimental.UtilityClass;
 
 import java.util.ArrayDeque;
 
+@UtilityClass
 public class KeyboardUtil {
     public static final ArrayDeque<InputConstants.Key> KEY_BUFFER = new ArrayDeque<>();
     public static final Object2IntMap<String> NAME_TO_KEY;

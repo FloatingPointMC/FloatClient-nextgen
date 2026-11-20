@@ -19,7 +19,12 @@
 package io.github.floatingpointmc.client.nextgen.mixin.interfaces;
 
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface IGuiGraphicsExtractor {
-    GuiRenderState getGuiRenderState();
+    @NotNull GuiRenderState getGuiRenderState();
+
+    @Nullable ScreenRectangle floatclient$getScissor();
 }

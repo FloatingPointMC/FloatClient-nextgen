@@ -84,6 +84,9 @@ public class KillAura extends Module {
                 this.targets.addAll(targets);
             }
         }
+        if (rotation.getValue()) {
+
+        }
         if (suspendedAttack || (cooldown.getValue() && mc.player.getAttackStrengthScale(0.5f) > 0.9f) || (!cooldown.getValue() && attackTimer.isComplete(aps.getValue().longValue()))) {
             while (!this.targets.isEmpty()) {
                 Attackable target = this.targets.poll();

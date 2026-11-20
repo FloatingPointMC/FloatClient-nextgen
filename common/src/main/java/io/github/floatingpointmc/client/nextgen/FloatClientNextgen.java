@@ -18,6 +18,7 @@
 
 package io.github.floatingpointmc.client.nextgen;
 
+import io.github.floatingpointmc.client.nextgen.command.CommandRegistry;
 import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import io.github.floatingpointmc.client.nextgen.module.ModuleRegistry;
 import io.github.vlouboos.standaloneevent.api.ApiProvider;
@@ -25,7 +26,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public final class FloatClientNextgen {
-    public static final String MOD_ID = "floatclient-nextgen";
+    public static final String MOD_ID = "floatclient_nextgen";
     public static final String VERSION = "0.0.1-SNAPSHOT";
 
     public static void init() {
@@ -37,7 +38,13 @@ public final class FloatClientNextgen {
         currentMillis = System.currentTimeMillis();
         ModuleRegistry.init();
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+        log.info("Loading commands...");
+        currentMillis = System.currentTimeMillis();
+        CommandRegistry.init();
+        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
         log.info("Loading config...");
+        currentMillis = System.currentTimeMillis();
+        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
         log.info("Loading languages...");
         currentMillis = System.currentTimeMillis();
         LanguageManager.init();

@@ -18,11 +18,13 @@
 
 package io.github.floatingpointmc.client.nextgen.util.math;
 
+import lombok.experimental.UtilityClass;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
+@UtilityClass
 public class LocationUtil {
     public static @NotNull Vec3 closestVecTo(@NotNull Entity entity, @NotNull Vec3 from) {
         AABB aabb = entity.getBoundingBox();

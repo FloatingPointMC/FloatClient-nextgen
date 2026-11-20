@@ -18,8 +18,11 @@
 
 package io.github.floatingpointmc.client.nextgen.util.math;
 
+import lombok.experimental.UtilityClass;
+
 import java.awt.*;
 
+@UtilityClass
 public class MathUtil {
     public static double random(double min, double max) {
         if (max < min) return random(max, min);

@@ -18,13 +18,22 @@
 
 package io.github.floatingpointmc.client.nextgen.neoforge;
 
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 
 import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
+import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.neoforged.neoforge.client.event.lifecycle.ClientStartedEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
-@Mod(FloatClientNextgen.MOD_ID)
+@Mod("floatclient_nextgen")
 public final class FloatClientNextgenNeoForge {
     public FloatClientNextgenNeoForge() {
+        NeoForge.EVENT_BUS.register(this);
+    }
+
+    @SubscribeEvent
+    public void onClientStarted(ClientStartedEvent e) {
         // Run our common setup.
         FloatClientNextgen.init();
     }

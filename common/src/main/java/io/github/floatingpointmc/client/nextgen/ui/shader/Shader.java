@@ -18,116 +18,88 @@
 
 package io.github.floatingpointmc.client.nextgen.ui.shader;
 
-import io.github.floatingpointmc.client.nextgen.util.io.IOUtil;
-import lombok.extern.log4j.Log4j2;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.*;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 
-import java.io.IOException;
-import java.util.Objects;
+import java.util.Optional;
 
-import static org.lwjgl.opengl.GL20.*;
+/**
+ * One sampled image and four float parameters. Use on the render thread between render passes.
+ */
+public final class Shader {
+    private final RenderPipeline pipeline;
 
-@Log4j2
-public class Shader {
-    private final int programId;
-
-    public Shader(@NotNull String fragmentShader) {
-        try {
-            int program = glCreateProgram();
-            int fragmentShaderID = createShader(
-                    new String(
-                            IOUtil.toByte(
-                                    Objects.requireNonNull(
-                                            Shader.class.getResourceAsStream(
-                                                    "/assets/floatclient-nextgen/shaders/%s.frag".formatted(fragmentShader)
-                                            )
-                                    )
-                            )
-                    ),
-                    GL_FRAGMENT_SHADER
-            );
-            glAttachShader(program, fragmentShaderID);
-            int vertexShaderID = createShader(
-                    new String(
-                            IOUtil.toByte(
-                                    Objects.requireNonNull(
-                                            Shader.class.getResourceAsStream(
-                                                    "/assets/floatclient-nextgen/shaders/shader.vert"
-                                            )
-                                    )
-                            )
-                    ),
-                    GL_VERTEX_SHADER
-            );
-            glAttachShader(program, vertexShaderID);
-
-            glLinkProgram(program);
-            int status = glGetProgrami(program, GL_LINK_STATUS);
-
-            if (status == 0) {
-                throw new IllegalStateException("Shader failed to link!");
-            }
-            this.programId = program;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public Shader(@NotNull String name) {
+        pipeline = positionUvPipeline(name, transforms()
+                .withUniform("Parameters", UniformType.UNIFORM_BUFFER).build(),
+                new ColorTargetState(BlendFunction.TRANSLUCENT));
     }
 
-    public void init() {
-        glUseProgram(programId);
+    public static BindGroupLayout.Builder transforms() {
+        return BindGroupLayout.builder()
+                .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+                .withUniform("Projection", UniformType.UNIFORM_BUFFER);
     }
 
-    public void unload() {
-        glUseProgram(0);
+    public static RenderPipeline positionUvPipeline(String name, BindGroupLayout bindings, ColorTargetState color) {
+        return RenderPipeline.builder()
+                .withLocation(Identifier.fromNamespaceAndPath("floatclient_nextgen", name))
+                .withVertexShader(Identifier.fromNamespaceAndPath("floatclient_nextgen", "position_uv"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath("floatclient_nextgen", name))
+                .withBindGroupLayout(bindings)
+                .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
+                .withDepthStencilState(Optional.empty())
+                .withCull(false)
+                .withColorTargetState(color)
+                .build();
     }
 
-    public void setUniformf(String name, float... args) {
-        int loc = glGetUniformLocation(programId, name);
-        switch (args.length) {
-            case 1:
-                glUniform1f(loc, args[0]);
-                break;
-            case 2:
-                glUniform2f(loc, args[0], args[1]);
-                break;
-            case 3:
-                glUniform3f(loc, args[0], args[1], args[2]);
-                break;
-            case 4:
-                glUniform4f(loc, args[0], args[1], args[2], args[3]);
-                break;
-        }
+    public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds) {
+        Matrix3x2fc snapshot = new Matrix3x2f(graphics.pose());
+        return new ShaderRenderState(pipeline, TextureSetup.noTexture(), scissor, bounds, out -> {
+            vertex(out, snapshot, x, y, 0, 0);
+            vertex(out, snapshot, x, y2, 0, 1);
+            vertex(out, snapshot, x2, y2, 1, 1);
+            vertex(out, snapshot, x, y, 0, 0);
+            vertex(out, snapshot, x2, y2, 1, 1);
+            vertex(out, snapshot, x2, y, 1, 0);
+        });
     }
 
-    public void setUniformi(String name, int... args) {
-        int loc = glGetUniformLocation(programId, name);
-        if (args.length > 1) glUniform2i(loc, args[0], args[1]);
-        else glUniform1i(loc, args[0]);
+    public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2,
+                                           int color, float first,
+                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds, @Nullable RenderTarget target) {
+        return draw(graphics, x, y, x2, y2, color, first, 0, scissor, bounds, target);
     }
 
-    public static void drawQuads(float x, float y, float width, float height) {
-        glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(x, y);
-        glTexCoord2f(0, 1);
-        glVertex2f(x, y + height);
-        glTexCoord2f(1, 1);
-        glVertex2f(x + width, y + height);
-        glTexCoord2f(1, 0);
-        glVertex2f(x + width, y);
-        glEnd();
+    public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2,
+                                           int color, float first, float second,
+                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds,
+                                           @Nullable RenderTarget target) {
+        Matrix3x2fc snapshot = new Matrix3x2f(graphics.pose());
+        return new ShaderRenderState(pipeline, TextureSetup.noTexture(), scissor, bounds, out -> {
+            vertex(out, snapshot, x, y, 0, 0);
+            vertex(out, snapshot, x, y2, 0, 1);
+            vertex(out, snapshot, x2, y2, 1, 1);
+            vertex(out, snapshot, x, y, 0, 0);
+            vertex(out, snapshot, x2, y2, 1, 1);
+            vertex(out, snapshot, x2, y, 1, 0);
+        }, new ShaderRenderState.Uniforms(color, first, second, 0, 0), target);
     }
 
-    private int createShader(@NotNull String context, int type) {
-        int shader = glCreateShader(type);
-        glShaderSource(shader, context);
-        glCompileShader(shader);
-
-        if (glGetShaderi(shader, GL_COMPILE_STATUS) == 0) {
-            log.error(glGetShaderInfoLog(shader, 4096));
-            throw new IllegalStateException(String.format("Shader (%s) failed to compile!", type));
-        }
-
-        return shader;
+    private static void vertex(VertexConsumer out, Matrix3x2fc pose, float x, float y,
+                               float u, float v) {
+        out.addVertexWith2DPose(pose, x, y).setUv(u, v);
     }
 }

@@ -19,11 +19,17 @@
 package io.github.floatingpointmc.client.nextgen.ui.clickui.component;
 
 import io.github.floatingpointmc.client.nextgen.module.Category;
+import io.github.floatingpointmc.client.nextgen.module.Module;
+import io.github.floatingpointmc.client.nextgen.module.ModuleRegistry;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.ClickUI;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.Colors;
 import io.github.floatingpointmc.client.nextgen.ui.font.Fonts;
+import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
 import io.github.floatingpointmc.client.nextgen.util.math.MathUtil;
+import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
 import io.github.floatingpointmc.client.nextgen.util.render.RenderUtil;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -32,12 +38,21 @@ import org.jetbrains.annotations.NotNull;
 
 public final class CategoryComponent {
     private final Category category;
+    private final ReferenceArrayList<ModuleComponent> moduleComponents;
     private int x, y;
+    private int expectHeight;
+    private boolean dragging = false;
+    private FunctionUtil<Integer> activeHeight;
 
     public CategoryComponent(Category category, int x, int y) {
         this.category = category;
         this.x = x;
         this.y = y;
+        moduleComponents = new ReferenceArrayList<>();
+        ReferenceSet<Module> modules = ModuleRegistry.getByCategory(category);
+        modules.forEach(module -> moduleComponents.add(new ModuleComponent(module)));
+        expectHeight = 20 * modules.size();
+        activeHeight = FunctionUtil.done(expectHeight);
     }
 
     public void draw(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -50,7 +65,14 @@ public final class CategoryComponent {
         int pureExtremeDark = MathUtil.reAlpha(Colors.EXTREME_DARK_THEME, (int) (ClickUI.alphaAnimation.calculate() * 0.88f));
         int background = MathUtil.reAlpha(0xFF100F16, (int) (ClickUI.alphaAnimation.calculate() * 0.72f));
         int currentY = 28;
-        RenderUtil.drawRoundedRect(x, y, x + 100, y + currentY, 10, background);
+        for (ModuleComponent moduleComponent : moduleComponents) {
+            currentY += moduleComponent.getHeight().calculate();
+        }
+        BlurUtil.beginKawaseCapture();
+        RenderUtil.drawRoundedRect(graphics, x, y, x + 100, y + currentY, 10, pureExtremeDark);
+        BlurUtil.bloomKawase(2, 3);
+        RenderUtil.drawRoundedRect(graphics, x, y, x + 100, y + currentY, 10, background);
+        RenderUtil.drawRoundedOutline(graphics, x, y, x + 100, y + currentY, 10, 1, lightWhite);
         graphics.text(Minecraft.getInstance().font, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite);
 
     }

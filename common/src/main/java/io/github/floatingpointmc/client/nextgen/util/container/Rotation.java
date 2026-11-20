@@ -18,5 +18,12 @@
 
 package io.github.floatingpointmc.client.nextgen.util.container;
 
+import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
+
 public record Rotation(float yaw, float pitch) {
+    public @NotNull Rotation offsetYaw(@NotNull Rotation current) {
+        float diffYaw = yaw - current.yaw;
+        return new Rotation(Mth.wrapDegrees(diffYaw), pitch);
+    }
 }

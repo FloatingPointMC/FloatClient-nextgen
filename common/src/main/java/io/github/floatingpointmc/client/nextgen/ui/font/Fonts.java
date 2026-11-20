@@ -18,13 +18,19 @@
 
 package io.github.floatingpointmc.client.nextgen.ui.font;
 
+import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public final class Fonts {
     public static final FontDescription GEIST_BOLD;
 
     static {
-        GEIST_BOLD = new FontDescription.Resource(Identifier.fromNamespaceAndPath("floatclient-nextgen", "geist-bold"));
+        GEIST_BOLD = getFontResource("geist-bold");
+    }
+
+    private static @NotNull FontDescription.Resource getFontResource(@NotNull String name) {
+        return new FontDescription.Resource(Identifier.fromNamespaceAndPath(FloatClientNextgen.MOD_ID, name));
     }
 }

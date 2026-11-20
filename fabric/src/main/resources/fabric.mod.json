@@ -3,27 +3,24 @@
   "id": "floatclient_nextgen",
   "version": "${version}",
   "name": "Float Client",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "A free auxiliary mod for Minecraft Java Edition.",
   "authors": [
-    "Me!"
+    "FloatingPoint-MC"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/FloatingPoint-MC/",
+    "sources": "https://github.com/FloatingPoint-MC/FloatClient-nextgen"
   },
-  "license": "CC0-1.0",
+  "license": "AGPLv3",
   "icon": "assets/floatclient_nextgen/icon.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "main": [
-      "io.github.floatingpointmc.client.nextgen.fabric.ExampleModFabric"
-    ],
-    "client": [
-      "io.github.floatingpointmc.client.nextgen.fabric.client.ExampleModFabricClient"
+      "io.github.floatingpointmc.client.nextgen.fabric.FloatClientNextgenFabric"
     ]
   },
   "mixins": [
-    "floatclient-nextgen.mixins.json"
+    "floatclient_nextgen.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.20.1",

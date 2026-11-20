@@ -1,9 +1,15 @@
-#version 120
+#version 330
+#extension GL_ARB_separate_shader_objects : require
 
-uniform vec2 rectSize;
-uniform vec4 color;
-uniform float radius;
-uniform float thickness;
+layout(location = 0) in vec2 texCoord;
+layout(location = 0) out vec4 fragColor;
+
+layout(std140) uniform Parameters {
+    vec2 rectSize;
+    vec4 color;
+    float radius;
+    float thickness;
+};
 
 float roundSDF(vec2 p, vec2 b, float r) {
     return length(max(abs(p) - b, vec2(0.0))) - r;
@@ -11,7 +17,7 @@ float roundSDF(vec2 p, vec2 b, float r) {
 
 void main() {
     vec2 rectHalf = rectSize * 0.5;
-    vec2 p = rectHalf - (gl_TexCoord[0].xy * rectSize);
+    vec2 p = rectHalf - (texCoord * rectSize);
     vec2 b = rectHalf - vec2(radius + 1.0);
     float dist = roundSDF(p, b, radius);
     float distanceToCut = p.x - b.x;
@@ -28,5 +34,5 @@ void main() {
     if (finalAlpha <= 0.0) {
         discard;
     }
-    gl_FragColor = vec4(color.rgb, finalAlpha);
+    fragColor = vec4(color.rgb, finalAlpha);
 }

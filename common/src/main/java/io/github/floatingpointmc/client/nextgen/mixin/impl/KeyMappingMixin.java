@@ -24,13 +24,9 @@ import io.github.floatingpointmc.client.nextgen.util.io.KeyboardUtil;
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.List;
-import java.util.Map;
 
 @Mixin(KeyMapping.class)
 public class KeyMappingMixin implements IKeyMapping {
@@ -49,10 +45,5 @@ public class KeyMappingMixin implements IKeyMapping {
     public void floatclient_nextgen$clear() {
         clickCount = 0;
         isDown = false;
-    }
-
-    @Accessor
-    public static Map<InputConstants.Key, List<KeyMapping>> getMAP() {
-        throw new UnsupportedOperationException("Implemented via mixin");
     }
 }

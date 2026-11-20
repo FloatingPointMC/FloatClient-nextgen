@@ -18,77 +18,65 @@
 
 package io.github.floatingpointmc.client.nextgen.util.render;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IGuiGraphicsExtractor;
 import io.github.floatingpointmc.client.nextgen.ui.shader.Shader;
-import net.minecraft.client.Minecraft;
+import lombok.experimental.UtilityClass;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
-
-import static org.lwjgl.opengl.GL11.*;
-
+@UtilityClass
 public class RenderUtil {
-    private static final Minecraft mc = Minecraft.getInstance();
-    private static final Shader roundedShader = new Shader("rounded_rect");
-    private static final Shader roundedGradientShader = new Shader("rounded_rect_gradient");
-    private static final Shader roundedHGradientShader = new Shader("rounded_rect_gradient_horizontal");
-    private static final Shader roundedOutlineShader = new Shader("rounded_outline");
+    private static final Shader ROUNDED_RECT;
+    private static final Shader ROUNDED_OUTLINE;
 
-    public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, int c) {
+    static {
+        ROUNDED_RECT = new Shader("rounded_rect");
+        ROUNDED_OUTLINE = new Shader("rounded_outline");
+    }
+
+    public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, int color) {
+        drawRoundedRect(graphics, x, y, x2, y2, radius, color, BlurUtil.currentCaptureTarget());
+    }
+
+    public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, int color, RenderTarget target) {
         float width = x2 - x;
         float height = y2 - y;
-        Color color = new Color(c, true);
-        glColor4f(1, 1, 1, 1);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_ALPHA_TEST);
-        glAlphaFunc(GL_GREATER, 0);
-        roundedShader.init();
-
-        setupRoundedRectUniforms(width, height, radius, roundedShader);
-        roundedShader.setUniformf("color", color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-
-        Shader.drawQuads(x, y, width, height);
-        roundedShader.unload();
-        glDisable(GL_BLEND);
+        if (width <= 0 || height <= 0) return;
+        float fraction = Math.clamp(radius / Math.min(width, height), 0f, 0.5f);
+        int left = (int) Math.floor(x);
+        int top = (int) Math.floor(y);
+        ScreenRectangle bounds = new ScreenRectangle(left, top,
+                (int) Math.ceil(x + width) - left, (int) Math.ceil(y + height) - top).transformMaxBounds(graphics.pose());
+        ScreenRectangle scissor = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
+        if (scissor != null) bounds = bounds.intersection(scissor);
+        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return;
+        ((IGuiGraphicsExtractor) graphics).getGuiRenderState()
+                .addGuiElement(ROUNDED_RECT.draw(graphics, x, y, x2, y2, color, fraction, scissor, bounds, target));
     }
 
-    public static void setupRoundedRectUniforms(float width, float height, float radius, @NotNull Shader shader) {
-        shader.setUniformf("rectSize", width * mc.getWindow().getGuiScale(), height * mc.getWindow().getGuiScale());
-        shader.setUniformf("radius", radius * mc.getWindow().getGuiScale());
+    public static void drawRoundedOutline(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, float thickness, int c) {
+        drawRoundedOutline(graphics, x, y, x2, y2, radius, thickness, c, null);
     }
 
-    class RoundedRectRenderState implements GuiElementRenderState {
-
-        @Override
-        public void buildVertices(VertexConsumer vertexConsumer) {
-
-        }
-
-        @Override
-        public RenderPipeline pipeline() {
-            return null;
-        }
-
-        @Override
-        public TextureSetup textureSetup() {
-            return null;
-        }
-
-        @Override
-        public @Nullable ScreenRectangle scissorArea() {
-            return null;
-        }
-
-        @Override
-        public @Nullable ScreenRectangle bounds() {
-            return null;
-        }
+    public static void drawRoundedOutline(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, float radius, float thickness, int c, @Nullable RenderTarget target) {
+        float width = x2 - x;
+        float height = y2 - y;
+        if (width <= 0 || height <= 0 || thickness <= 0) return;
+        float scale = Math.min(width, height);
+        float radiusFraction = Math.clamp(radius / scale, 0f, 0.5f);
+        float thicknessFraction = Math.clamp(thickness / scale, 0f, 1f);
+        int left = (int) Math.floor(x);
+        int top = (int) Math.floor(y);
+        ScreenRectangle bounds = new ScreenRectangle(left, top,
+                (int) Math.ceil(x + width) - left, (int) Math.ceil(y + height) - top).transformMaxBounds(graphics.pose());
+        ScreenRectangle scissor = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
+        if (scissor != null) bounds = bounds.intersection(scissor);
+        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return;
+        ((IGuiGraphicsExtractor) graphics).getGuiRenderState()
+                .addGuiElement(ROUNDED_OUTLINE.draw(graphics, x, y, x2, y2, c,
+                        radiusFraction, thicknessFraction, scissor, bounds, target));
     }
 }

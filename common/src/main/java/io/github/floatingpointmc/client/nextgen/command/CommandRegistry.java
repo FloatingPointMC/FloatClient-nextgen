@@ -27,12 +27,14 @@ import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashBigSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
+@Log4j2
 public final class CommandRegistry {
     private static final @NotNull ReferenceSet<Command> commands;
 
@@ -42,6 +44,10 @@ public final class CommandRegistry {
         cmdSet.add(new Toggle());
         commands = ReferenceSets.unmodifiable(cmdSet);
         StandaloneEventAPI.getApi().register(CommandRegistry.class);
+    }
+
+    public static void init() {
+        log.info("Loaded {} commands.", commands.size());
     }
 
     @EventHandler

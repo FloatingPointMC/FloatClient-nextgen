@@ -33,8 +33,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
     @Inject(method = "tick", at = @At("HEAD"))
@@ -50,8 +48,11 @@ public class MinecraftMixin {
             KeyEvent e = new KeyEvent(key.getValue());
             StandaloneEventAPI.getApi().call(e);
             if (e.canceled) {
-                List<KeyMapping> mappings = KeyMappingMixin.getMAP().get(key);
-                mappings.forEach(m -> ((IKeyMapping) m).floatclient_nextgen$clear());
+                for (KeyMapping mapping : Minecraft.getInstance().options.keyMappings) {
+                    if (mapping.matches(key)) {
+                        ((IKeyMapping) mapping).floatclient_nextgen$clear();
+                    }
+                }
                 ci.cancel();
             }
         }

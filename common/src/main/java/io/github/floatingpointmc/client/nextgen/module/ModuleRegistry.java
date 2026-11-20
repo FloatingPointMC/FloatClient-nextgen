@@ -50,6 +50,11 @@ public class ModuleRegistry {
                 new ClickGUI()
         );
         implementationsByCategory.put(Category.COMBAT, ReferenceSets.unmodifiable(combatImplementations));
+        implementationsByCategory.put(Category.MOVEMENT, ReferenceSets.unmodifiable(movementImplementations));
+        implementationsByCategory.put(Category.RENDER, ReferenceSets.unmodifiable(renderImplementations));
+        implementationsByCategory.put(Category.PLAYER, ReferenceSets.unmodifiable(playerImplementations));
+        implementationsByCategory.put(Category.WORLD, ReferenceSets.unmodifiable(worldImplementations));
+        implementationsByCategory.put(Category.MISC, ReferenceSets.unmodifiable(miscImplementations));
 
         modulesByCategory = Object2ReferenceMaps.unmodifiable(implementationsByCategory);
         modules = Object2ReferenceMaps.unmodifiable(implementations);

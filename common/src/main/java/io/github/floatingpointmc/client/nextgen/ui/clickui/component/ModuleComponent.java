@@ -16,20 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.floatingpointmc.client.nextgen.fabric;
+package io.github.floatingpointmc.client.nextgen.ui.clickui.component;
 
-import net.fabricmc.api.ModInitializer;
+import io.github.floatingpointmc.client.nextgen.module.Module;
+import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
-import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
+public class ModuleComponent {
+    private final Module module;
+    @Getter
+    private int expectHeight;
+    @Getter
+    private @NotNull FunctionUtil<Integer> height;
 
-public final class ExampleModFabric implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        // This code runs as soon as Minecraft is in a mod-load-ready state.
-        // However, some things (like resources) may still be uninitialized.
-        // Proceed with mild caution.
-
-        // Run our common setup.
-        FloatClientNextgen.init();
+    public ModuleComponent(Module module) {
+        this.module = module;
+        expectHeight = 20;
+        height = FunctionUtil.done(20);
     }
 }

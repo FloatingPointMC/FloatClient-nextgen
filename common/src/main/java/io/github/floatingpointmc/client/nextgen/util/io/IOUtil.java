@@ -20,6 +20,7 @@ package io.github.floatingpointmc.client.nextgen.util.io;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+@UtilityClass
 public class IOUtil {
     public static JsonObject readFileToJson(@NotNull File file) {
         try (FileInputStream fis = new FileInputStream(file)) {

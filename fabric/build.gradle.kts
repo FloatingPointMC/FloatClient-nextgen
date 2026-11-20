@@ -36,7 +36,9 @@ dependencies {
     implementation("dev.architectury:architectury-fabric:${rootProject.property("architectury_api_version")}")
 
     add("common", project(":common"))
+    add("common", project(mapOf("path" to ":common", "configuration" to "standaloneEventRuntime")))
     add("shadowBundle", project(mapOf("path" to ":common", "configuration" to "transformProductionFabric")))
+    add("shadowBundle", project(mapOf("path" to ":common", "configuration" to "standaloneEventRuntime")))
 }
 
 tasks.named<ProcessResources>("processResources") {
