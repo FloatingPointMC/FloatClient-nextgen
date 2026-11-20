@@ -42,4 +42,8 @@ public class SelectionList extends Argument<String> {
     public void setValue(@NonNull String value) {
         if (modes.contains(value)) super.setValue(value);
     }
+
+    public boolean isCurrent(@NotNull String selection) {
+        return getValue().equals(selection);
+    }
 }
