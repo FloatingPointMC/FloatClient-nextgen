@@ -27,14 +27,16 @@ import org.jetbrains.annotations.NotNull;
 public final class FontRegistry {
     public static final Font GEIST;
     public static final Font GEIST_BOLD;
+    public static final Font SANS;
 
     static {
-        GEIST = font("font/geist.ttf");
-        GEIST_BOLD = font("font/geist-bold.ttf");
+        GEIST = font("geist");
+        GEIST_BOLD = font("geist-bold");
+        SANS = font("sans");
     }
 
     private static @NotNull Font font(@NotNull String path) {
-        return new Font(Identifier.fromNamespaceAndPath(FloatClientNextgen.MOD_ID, path));
+        return new Font(Identifier.fromNamespaceAndPath(FloatClientNextgen.MOD_ID, "fonts/%s.ttf".formatted(path)));
     }
 
 

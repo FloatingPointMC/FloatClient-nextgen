@@ -63,6 +63,10 @@ public class Module {
     protected void onDisable() {}
 
     public void setEnabled(boolean enabled) {
+        setEnabled(enabled, true);
+    }
+
+    public void setEnabled(boolean enabled, boolean withSound) {
         assert mc.player != null;
         if (!toggleable) {
             onEnable();
@@ -72,7 +76,7 @@ public class Module {
             this.enabled = true;
             onEnable();
             StandaloneEventAPI.getApi().register(this);
-            if (SOUND_TIMER.isComplete(100)) {
+            if (withSound && SOUND_TIMER.isComplete(100)) {
                 mc.player.playSound(SoundEvents.LEVER_CLICK, 0.5F, 1.0F);
                 SOUND_TIMER.reset();
             }
@@ -80,7 +84,7 @@ public class Module {
             StandaloneEventAPI.getApi().unregister(this);
             onDisable();
             this.enabled = false;
-            if (SOUND_TIMER.isComplete(100)) {
+            if (withSound && SOUND_TIMER.isComplete(100)) {
                 mc.player.playSound(SoundEvents.LEVER_CLICK, 0.4F, 0.8F);
                 SOUND_TIMER.reset();
             }

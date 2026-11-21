@@ -23,7 +23,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
-/** A reusable font face backed by FloatClient's cached glyph renderer. */
+/** A reusable fonts face backed by FloatClient's cached glyph renderer. */
 public final class Font {
     private final Identifier face;
 
@@ -62,8 +62,8 @@ public final class Font {
     }
 
     private static float toLayoutSize(float size) {
-        if (!Float.isFinite(size) || size <= 0) throw new IllegalArgumentException("Expected a positive font size");
-        // FloatClient's UI font sizes use half-pixel units (8.4 is approximately 16 px).
+        if (!Float.isFinite(size) || size <= 0) throw new IllegalArgumentException("Expected a positive fonts size");
+        // FloatClient's UI fonts sizes use half-pixel units (8.4 is approximately 16 px).
         return size * 2f;
     }
 }

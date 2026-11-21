@@ -19,6 +19,10 @@
 package io.github.floatingpointmc.client.nextgen.event.impl.render;
 
 import io.github.vlouboos.standaloneevent.api.Event;
+import lombok.RequiredArgsConstructor;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
+@RequiredArgsConstructor
 public final class Render2DEvent extends Event {
+    public final GuiGraphicsExtractor graphics;
 }

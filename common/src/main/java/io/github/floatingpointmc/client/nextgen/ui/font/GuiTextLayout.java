@@ -35,8 +35,8 @@ import java.util.*;
 public final class GuiTextLayout {
     static final FontRenderContext CONTEXT = new FontRenderContext(null, true, true);
     private static final java.awt.Font FALLBACK = new java.awt.Font(java.awt.Font.DIALOG, java.awt.Font.PLAIN, 1);
-    static final Identifier REGULAR = Identifier.fromNamespaceAndPath("floatclient_nextgen", "font/geist.ttf");
-    static final Identifier BOLD = Identifier.fromNamespaceAndPath("floatclient_nextgen", "font/geist-bold.ttf");
+    static final Identifier REGULAR = Identifier.fromNamespaceAndPath("floatclient_nextgen", "fonts/geist.ttf");
+    static final Identifier BOLD = Identifier.fromNamespaceAndPath("floatclient_nextgen", "fonts/geist-bold.ttf");
     private static final Map<Identifier, java.awt.Font> FACES = bounded(32);
     private static final Map<Key, GuiTextLayout> CACHE = bounded(256);
 
@@ -59,13 +59,13 @@ public final class GuiTextLayout {
         try (var stream = Minecraft.getInstance().getResourceManager().open(id)) {
             return java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, stream);
         } catch (IOException | FontFormatException e) {
-            LogUtils.getLogger().warn("Could not load GUI font {}", id, e);
+            LogUtils.getLogger().warn("Could not load GUI fonts {}", id, e);
             return FALLBACK;
         }
     }
 
     public static GuiTextLayout measure(String text, Identifier face, float size) {
-        if (!Float.isFinite(size) || size <= 0) throw new IllegalArgumentException("Expected a positive font size");
+        if (!Float.isFinite(size) || size <= 0) throw new IllegalArgumentException("Expected a positive fonts size");
         var spans = new ArrayList<Span>();
         spans.add(new Span(text, Style.EMPTY));
         var key = new Key(List.copyOf(spans), face, size);

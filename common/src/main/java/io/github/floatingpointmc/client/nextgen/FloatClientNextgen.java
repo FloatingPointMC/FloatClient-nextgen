@@ -28,8 +28,10 @@ import net.minecraft.client.gui.font.FontManager;
 
 @Log4j2
 public final class FloatClientNextgen {
-    public static final String MOD_ID = "floatclient_nextgen";
+    public static final String NAME = "Float";
+    public static final String EDITION = "Nextgen-";
     public static final String VERSION = "0.0.1-SNAPSHOT";
+    public static final String MOD_ID = "floatclient_nextgen";
 
     public static void init() {
         log.info("Loading event api...");

@@ -19,23 +19,29 @@
 package io.github.floatingpointmc.client.nextgen.module;
 
 import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.KillAura;
 import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
+import io.github.floatingpointmc.client.nextgen.module.impl.render.HUD;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.Rotation;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.extern.log4j.Log4j2;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayDeque;
 import java.util.Optional;
 
 @Log4j2
 public class ModuleRegistry {
     private static final @NotNull Object2ReferenceMap<String, Module> modules;
     private static final @NotNull Object2ReferenceMap<Category, ReferenceSet<Module>> modulesByCategory;
+    private static final ArrayDeque<Module> enabledModules = new ArrayDeque<>();
+    private static boolean loaded;
 
     static {
         var implementations = new Object2ReferenceLinkedOpenHashMap<String, Module>();
@@ -52,6 +58,7 @@ public class ModuleRegistry {
         );
         add(implementations, renderImplementations,
                 new ClickGUI(),
+                new HUD(),
                 new Rotation()
         );
         add(implementations, miscImplementations,
@@ -89,9 +96,24 @@ public class ModuleRegistry {
     }
 
     @EventHandler
-    public static void onKey(KeyEvent e) {
+    public static void onKey(@NotNull KeyEvent e) {
         for (Module module : modules.values()) {
             if (module.getKey() == e.key) module.toggle();
         }
+    }
+
+    @EventHandler
+    public static void onTick(@NotNull TickEvent e) {
+        if (Minecraft.getInstance().player == null) return;
+        if (!loaded) {
+            while (!enabledModules.isEmpty()) {
+                enabledModules.poll().setEnabled(true, false);
+            }
+            loaded = true;
+        }
+    }
+
+    public static void enable(@NotNull Module module) {
+        enabledModules.add(module);
     }
 }
