@@ -23,10 +23,10 @@ import io.github.floatingpointmc.client.nextgen.event.impl.player.PreMotionEvent
 import io.github.floatingpointmc.client.nextgen.util.container.Rotation;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +35,8 @@ import org.jetbrains.annotations.Nullable;
 public class RotationUtil {
     private static final Minecraft mc = Minecraft.getInstance();
     private static @Nullable Rotation currentRotation, prevRotation;
+    @Getter
+    private static boolean active;
 
     static {
         StandaloneEventAPI.getApi().register(RotationUtil.class);
@@ -43,10 +45,17 @@ public class RotationUtil {
     @EventHandler(Long.MAX_VALUE)
     public static void onTick(TickEvent event) {
         if (mc.player == null) return;
-        currentRotation = new Rotation(mc.player.getYRot(), mc.player.getXRot());
+        active = false;
+        Rotation current = new Rotation(mc.player.getYRot(), mc.player.getXRot());
+        if (prevRotation == null) {
+            prevRotation = current;
+            return;
+        }
+        Rotation offset = current.offsetYaw(prevRotation);
+        currentRotation = getRotationWithOffset(offset);
     }
 
-    @EventHandler(Long.MIN_VALUE)
+    @EventHandler(-1)
     public static void onPreMotion(PreMotionEvent e) {
         assert currentRotation != null;
         e.yaw = currentRotation.yaw();
@@ -61,19 +70,22 @@ public class RotationUtil {
         return new Rotation(0, 0);
     }
 
+    private static @NotNull Rotation getPrevRotation() {
+        if (prevRotation != null) return prevRotation;
+        return new Rotation(0, 0);
+    }
+
     public static void setCurrentRotation(@NotNull Rotation rotation) {
+        active = true;
         currentRotation = rotation;
     }
 
-    public static @NotNull Rotation getRotationOffset(@NotNull LivingEntity target) {
-        assert mc.player != null;
-        Vec3 closest = LocationUtil.closestVecTo(target, mc.player.getEyePosition());
-        Rotation rotation = getRotationOffsetToVec(closest);
-        Rotation current = getCurrentRotation();
-        return new Rotation(current.yaw() + rotation.yaw(), rotation.pitch());
+    public static @NotNull Rotation getRotationWithOffset(@NotNull Rotation offset) {
+        Rotation current = getPrevRotation();
+        return new Rotation(current.yaw() + offset.yaw(), offset.pitch());
     }
 
-    private static @NotNull Rotation getRotationOffsetToVec(@NotNull Vec3 vec) {
+    public static @NotNull Rotation getRotationOffsetToVec(@NotNull Vec3 vec) {
         assert mc.player != null;
         Vec3 self = mc.player.getEyePosition();
         double xDist = vec.x - self.x;
@@ -81,6 +93,12 @@ public class RotationUtil {
         double zDist = vec.z - self.z;
         float yaw = (float) (Math.atan2(zDist, xDist) * Mth.RAD_TO_DEG - 90.0);
         float pitch = (float) -(Math.atan2(Math.hypot(xDist, zDist), yDist) * Mth.RAD_TO_DEG);
-        return new Rotation(yaw, pitch).offsetYaw(getCurrentRotation());
+        return new Rotation(yaw, pitch).offsetYaw(getPrevRotation());
+    }
+
+    public static @NotNull Rotation wrap(@NotNull Rotation offset, float rotationSpeed) {
+        if (offset.yaw() > rotationSpeed) return new Rotation(rotationSpeed, offset.pitch());
+        if (offset.yaw() < -rotationSpeed) return new Rotation(-rotationSpeed, offset.pitch());
+        return offset;
     }
 }

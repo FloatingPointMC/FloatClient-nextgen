@@ -7,6 +7,7 @@ import io.github.floatingpointmc.client.nextgen.module.argument.impl.CheckBox;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.RangeSlider;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.Slider;
+import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
 import io.github.floatingpointmc.client.nextgen.util.container.Attackable;
 import io.github.floatingpointmc.client.nextgen.util.container.Timer;
 import io.github.floatingpointmc.client.nextgen.util.math.LocationUtil;
@@ -20,17 +21,12 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 public class KillAura extends Module {
@@ -43,22 +39,29 @@ public class KillAura extends Module {
     private final Slider blockingRange = new Slider("blockingrange", 0, () -> !mode.isCurrent("off"), 0, 3, 0.01);
     private final CheckBox rotation = new CheckBox("rotation", true, () -> !mode.isCurrent("multi"));
     private final RangeSlider rotationSpeed = new RangeSlider("rotationspeed", 180, 180, rotation::getValue, 10, 180, 10);
+    private final @NotNull LinkedList<@NotNull Attackable> targets = new LinkedList<>();
     private final Timer attackTimer = new Timer();
     private boolean suspendedAttack;
-    private @NotNull LinkedList<@NotNull Attackable> targets = new LinkedList<>();
 
     public KillAura() {
         super("killaura", Category.COMBAT);
-        addArguments(mode, range, aps, autoBlocking, rotation, rotationSpeed);
+        addArguments(mode, range, cooldown, aps, autoBlocking, blockingRange, rotation, rotationSpeed);
     }
 
     @EventHandler
     public void onTick(TickEvent e) {
         if (mc.level == null || mc.player == null || mc.player.isSpectator() || mc.player.isHandsBusy() || mc.gameMode == null) return;
-        double expansion = range.getValue() + blockingRange.getValue();
-        List<Entity> entities = mc.level.getEntities(mc.player, mc.player.getBoundingBox().expandTowards(expansion, expansion, expansion));
-        entities.removeIf(entity -> !(entity instanceof LivingEntity));
-        ArrayList<Attackable> targets = new ArrayList<>(entities.stream().map(entity -> new Attackable((LivingEntity) entity, LocationUtil.closestVecTo(entity, mc.player.getEyePosition()))).toList());
+        Vec3 selfEye = mc.player.getEyePosition();
+        ArrayList<Attackable> targets = new ArrayList<>();
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (Target.notQualified(entity)) continue;
+            if (entity.distanceToSqr(selfEye) > 100) continue;
+            if (entity instanceof LivingEntity living) {
+                targets.add(new Attackable(living, living.getHealth(), LocationUtil.closestVecTo(living, selfEye)));
+            } else {
+                targets.add(new Attackable(entity, 0, LocationUtil.closestVecTo(entity, selfEye)));
+            }
+        }
         if (targets.isEmpty()) {
             this.targets.clear();
             return;
@@ -84,13 +87,14 @@ public class KillAura extends Module {
                 this.targets.addAll(targets);
             }
         }
+        if (this.targets.isEmpty()) return;
         if (rotation.getValue()) {
-
+            RotationUtil.setCurrentRotation(RotationUtil.getRotationWithOffset(RotationUtil.wrap(RotationUtil.getRotationOffsetToVec(this.targets.peek().hitVec()), rotationSpeed.getValue().floatValue())));
         }
         if (suspendedAttack || (cooldown.getValue() && mc.player.getAttackStrengthScale(0.5f) > 0.9f) || (!cooldown.getValue() && attackTimer.isComplete(aps.getValue().longValue()))) {
             while (!this.targets.isEmpty()) {
                 Attackable target = this.targets.poll();
-                LivingEntity entity = target.target();
+                Entity entity = target.target();
                 if (mc.player.isBlocking() && !suspendedAttack) {
                     mc.player.connection.send(new ServerboundPlayerActionPacket(
                             ServerboundPlayerActionPacket.Action.RELEASE_USE_ITEM,
@@ -103,6 +107,7 @@ public class KillAura extends Module {
                 suspendedAttack = false;
                 mc.player.connection.send(new ServerboundAttackPacket(entity.getId()));
                 mc.player.attack(entity);
+                mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                 mc.player.connection.send(ServerboundPunchPacket.INSTANCE);
                 if (mc.player.isUsingItem()) {
                     Vec3 location = target.hitVec().subtract(entity.getX(), entity.getY(), entity.getZ());
@@ -120,8 +125,8 @@ public class KillAura extends Module {
                 switch (priority.getValue()) {
                     case "distance" ->
                             Comparator.comparingDouble(target -> target.hitVec().distanceTo(self.getEyePosition()));
-                    case "fov" -> Comparator.comparing(target -> RotationUtil.getRotationOffset(target.target()).yaw());
-                    default -> Comparator.comparing(t -> t.target().getHealth());
+                    case "fov" -> Comparator.comparing(target -> RotationUtil.getRotationOffsetToVec(target.hitVec()).yaw());
+                    default -> Comparator.comparing(Attackable::health);
                 });
     }
 }

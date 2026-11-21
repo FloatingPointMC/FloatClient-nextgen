@@ -21,7 +21,9 @@ package io.github.floatingpointmc.client.nextgen.module;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.KillAura;
+import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
+import io.github.floatingpointmc.client.nextgen.module.impl.render.Rotation;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import it.unimi.dsi.fastutil.objects.*;
@@ -49,7 +51,11 @@ public class ModuleRegistry {
                 new KillAura()
         );
         add(implementations, renderImplementations,
-                new ClickGUI()
+                new ClickGUI(),
+                new Rotation()
+        );
+        add(implementations, miscImplementations,
+                new Target()
         );
         implementationsByCategory.put(Category.COMBAT, ReferenceSets.unmodifiable(combatImplementations));
         implementationsByCategory.put(Category.MOVEMENT, ReferenceSets.unmodifiable(movementImplementations));

@@ -26,6 +26,17 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
     @Shadow
+    public boolean horizontalCollision;
+
+    @Shadow
+    public abstract double getZ();
+
+    @Shadow
+    public abstract double getY();
+
+    @Shadow public abstract double getX();
+
+    @Shadow
     public abstract boolean onGround();
 
     @Shadow

@@ -25,5 +25,5 @@ import lombok.AllArgsConstructor;
 public final class PreMotionEvent extends Event {
     public double x, y, z;
     public float yaw, pitch;
-    public boolean onGround;
+    public boolean onGround, horizontalCollision;
 }
