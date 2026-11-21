@@ -53,10 +53,10 @@ public final class Bind extends Command {
         }
         module.get().setKey(key);
         PlayerUtil.addMessage(Component.literal("Bound ").withColor(TextColor.GREEN)
-                .append(module.get().getName()).withColor(TextColor.AQUA)
-                .append(" to ").withColor(TextColor.GREEN)
-                .append(KeyboardUtil.KEY_TO_NAME.get(key)).withColor(TextColor.YELLOW)
-                .append("!").withColor(TextColor.GREEN)
+                .append(Component.literal(module.get().getName()).withColor(TextColor.AQUA))
+                .append(Component.literal(" to ").withColor(TextColor.GREEN))
+                .append(Component.literal(KeyboardUtil.KEY_TO_NAME.get(key)).withColor(TextColor.YELLOW))
+                .append(Component.literal("!").withColor(TextColor.GREEN))
         );
     }
 }

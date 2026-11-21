@@ -19,33 +19,37 @@
 package io.github.floatingpointmc.client.nextgen.module.argument.impl;
 
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.Supplier;
 
+@Getter
 public class Slider extends Argument<Double> {
-    private final double min, max, increment;
+    private final double minimum, maximum, increment;
 
-    public Slider(@NotNull String identity, double value, double min, double max, double increment) {
+    public Slider(@NotNull String identity, double value, double minimum, double maximum, double increment) {
         super(identity, value, () -> true);
-        this.min = min;
-        this.max = max;
+        this.minimum = minimum;
+        this.maximum = maximum;
         this.increment = increment;
     }
 
-    public Slider(@NotNull String identity, double value, @NotNull Supplier<Boolean> displayable, double min, double max, double increment) {
+    public Slider(@NotNull String identity, double value, @NotNull Supplier<Boolean> displayable, double minimum, double maximum, double increment) {
         super(identity, value, displayable);
-        this.min = min;
-        this.max = max;
+        this.minimum = minimum;
+        this.maximum = maximum;
         this.increment = increment;
     }
 
     @Override
     public void setValue(@NonNull Double value) {
         if (value.isInfinite() || value.isNaN()) return;
-        value = Math.clamp(value, min, max);
-        double rest = value % increment / increment;
+        value = Math.clamp(value, minimum, maximum);
+        double rest = value % increment;
+        value -= rest;
+        rest /= increment;
         value += Math.round(rest) * increment;
         super.setValue(value);
     }

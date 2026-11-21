@@ -80,6 +80,18 @@ public final class ClickUI extends Screen {
     }
 
     @Override
+    public boolean mouseReleased(@NotNull MouseButtonEvent event) {
+        int mouseButton = event.button();
+        categories.forEach(categoryComponent -> categoryComponent.onMouseReleased(mouseButton));
+        return true;
+    }
+
+    @Override
+    public void tick() {
+        categories.forEach(CategoryComponent::tick);
+    }
+
+    @Override
     public boolean isPauseScreen() {
         return false;
     }

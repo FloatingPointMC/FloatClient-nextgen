@@ -19,18 +19,26 @@
 package io.github.floatingpointmc.client.nextgen.ui.font;
 
 import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
-import net.minecraft.network.chat.FontDescription;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
-public final class Fonts {
-    public static final FontDescription GEIST_BOLD;
+@Log4j2
+public final class FontRegistry {
+    public static final Font GEIST;
+    public static final Font GEIST_BOLD;
 
     static {
-        GEIST_BOLD = getFontResource("geist-bold");
+        GEIST = font("font/geist.ttf");
+        GEIST_BOLD = font("font/geist-bold.ttf");
     }
 
-    private static @NotNull FontDescription.Resource getFontResource(@NotNull String name) {
-        return new FontDescription.Resource(Identifier.fromNamespaceAndPath(FloatClientNextgen.MOD_ID, name));
+    private static @NotNull Font font(@NotNull String path) {
+        return new Font(Identifier.fromNamespaceAndPath(FloatClientNextgen.MOD_ID, path));
+    }
+
+
+    public static void init() {
+        log.info("Loaded {} fonts.", 2);
     }
 }

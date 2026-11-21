@@ -20,11 +20,13 @@ package io.github.floatingpointmc.client.nextgen.module;
 
 import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
+import io.github.floatingpointmc.client.nextgen.util.container.Timer;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class Module {
+    private static final Timer SOUND_TIMER = new Timer();
     protected final Minecraft mc = Minecraft.getInstance();
     @Getter
     private final @NotNull String identity;
@@ -60,6 +63,7 @@ public class Module {
     protected void onDisable() {}
 
     public void setEnabled(boolean enabled) {
+        assert mc.player != null;
         if (!toggleable) {
             onEnable();
             return;
@@ -68,10 +72,18 @@ public class Module {
             this.enabled = true;
             onEnable();
             StandaloneEventAPI.getApi().register(this);
+            if (SOUND_TIMER.isComplete(100)) {
+                mc.player.playSound(SoundEvents.LEVER_CLICK, 0.5F, 1.0F);
+                SOUND_TIMER.reset();
+            }
         } else if (!enabled && this.enabled) {
             StandaloneEventAPI.getApi().unregister(this);
             onDisable();
             this.enabled = false;
+            if (SOUND_TIMER.isComplete(100)) {
+                mc.player.playSound(SoundEvents.LEVER_CLICK, 0.4F, 0.8F);
+                SOUND_TIMER.reset();
+            }
         }
     }
 

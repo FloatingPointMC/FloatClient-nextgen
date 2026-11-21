@@ -26,6 +26,7 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import io.github.floatingpointmc.client.nextgen.ui.shader.state.impl.ShaderRenderState;
 import io.github.floatingpointmc.client.nextgen.ui.shader.state.OperationBoundary;
 import net.minecraft.client.gui.render.GuiRenderer;
+import io.github.floatingpointmc.client.nextgen.ui.font.GlyphAtlas;
 import net.minecraft.client.renderer.DynamicGpuDataStorageMapped;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix4f;
@@ -109,6 +110,7 @@ public abstract class GuiRendererMixin {
     @ModifyArg(method = "draw", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/DynamicGpuData;writeTransform(Lorg/joml/Matrix4f;)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;"))
     private Matrix4f floatclient$uploadStyles(Matrix4f matrix) {
+        GlyphAtlas.upload();
         if (floatclient$styles.isEmpty()) return matrix;
         if (floatclient$storage == null) {
             floatclient$storage = new DynamicGpuDataStorageMapped<>("GUI shader parameters", 32, GpuBuffer.USAGE_UNIFORM, 32);
@@ -129,6 +131,7 @@ public abstract class GuiRendererMixin {
 
     @Inject(method = "render", at = @At("RETURN"))
     private void floatclient$finishFrame(CallbackInfo ci) {
+        GlyphAtlas.endFrame();
         floatclient$styles.clear();
         floatclient$params.clear();
         floatclient$boundaries.clear();

@@ -23,7 +23,7 @@ import io.github.floatingpointmc.client.nextgen.module.Module;
 import io.github.floatingpointmc.client.nextgen.module.ModuleRegistry;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.ClickUI;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.Colors;
-import io.github.floatingpointmc.client.nextgen.ui.font.Fonts;
+import io.github.floatingpointmc.client.nextgen.ui.font.FontRegistry;
 import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
 import io.github.floatingpointmc.client.nextgen.util.math.MathUtil;
 import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
@@ -31,8 +31,7 @@ import io.github.floatingpointmc.client.nextgen.util.render.RenderUtil;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 public final class CategoryComponent {
@@ -42,6 +41,7 @@ public final class CategoryComponent {
     private int expectHeight;
     private boolean dragging = false;
     private FunctionUtil<Integer> activeHeight;
+    private int prevMouseX = -1, prevMouseY = -1;
 
     public CategoryComponent(Category category, int x, int y) {
         this.category = category;
@@ -55,6 +55,12 @@ public final class CategoryComponent {
     }
 
     public void draw(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (dragging) {
+            x += mouseX - prevMouseX;
+            y += mouseY - prevMouseY;
+        }
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
         int pureWhite = MathUtil.reAlpha(0xD8D8D8, ClickUI.alphaAnimation.calculate());
         int lightWhite = MathUtil.reAlpha(0xFFFFFF, (int) (ClickUI.alphaAnimation.calculate() * 0.06f));
         int pureLight = MathUtil.reAlpha(Colors.LIGHT_THEME, ClickUI.alphaAnimation.calculate());
@@ -67,22 +73,61 @@ public final class CategoryComponent {
         for (ModuleComponent moduleComponent : moduleComponents) {
             currentY += moduleComponent.getHeight().calculate();
         }
+        currentY += 4;
         int bottom = y + currentY;
         BlurUtil.bloomKawase(graphics, 2, 3, RenderUtil.roundedRect(graphics, x, y, x + 100, bottom, 10, pureExtremeDark));
         RenderUtil.drawRoundedRect(graphics, x, y, x + 100, y + currentY, 10, background);
+
         RenderUtil.drawRoundedOutline(graphics, x, y, x + 100, y + currentY, 10, 1, lightWhite);
         RenderUtil.drawRoundedGradientRect(graphics, x, y, x + 100, y + 14, 10, 14, shadow, shadowBottom);
+
         BlurUtil.bloomKawase(graphics, 2, 1, RenderUtil.roundedRect(graphics, x + 9, y + 7, x + 22, y + 20, 4.5f, MathUtil.reAlpha(Colors.MAIN_THEME, (int) (ClickUI.alphaAnimation.calculate() * 0.5f))));
         RenderUtil.drawRoundedGradientRect(graphics, x + 9, y + 7, x + 22, y + 20, 4.5f, pureLight, pureDark);
-        RenderUtil.drawText(graphics, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite, 1f, true);
 
-        BlurUtil.bloomKawase(graphics, 2, 1, RenderUtil.text(graphics, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite, 1.0f, false));
-        //RenderUtil.drawImage(new ResourceLocation("float", "clickui/" + category.name.toLowerCase() + ".png"), x + 12, y + 10, 7, 7);
-        //FontManager.geist16b.drawString(category.name, x + 26, y + 10, pureWhite, 1f, true).submit(graphics);
+        BlurUtil.bloomKawase(graphics, 1, 1, FontRegistry.GEIST_BOLD.text(graphics, category.getName(), 4.2f, x + 26, y + 8, MathUtil.reAlpha(pureWhite, (int) (ClickUI.alphaAnimation.calculate() * 0.8f)), false));
+        FontRegistry.GEIST_BOLD.drawString(graphics, category.getName(), 4.2f, x + 26, y + 8, pureWhite, false);
 
+        RenderUtil.drawImage(graphics, Identifier.fromNamespaceAndPath("floatclient_nextgen", "clickui/" + category.name().toLowerCase() + ".png"), x + 12, y + 10, 7, 7);
+        graphics.fill(x + 1, y + 24, x + 99, y + 25, lightWhite);
+        currentY = 28;
+        for (ModuleComponent moduleComponent : moduleComponents) {
+            moduleComponent.draw(graphics, x, y + currentY, mouseX, mouseY);
+            currentY += moduleComponent.getHeight().calculate();
+        }
     }
 
     public boolean onMouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (MathUtil.isHovered(x, y, x + 100, y + 24, mouseX, mouseY)) {
+            if (mouseButton == 1) {
+                dragging = true;
+                return true;
+            }
+        } else if (MathUtil.isHovered(x + 4, y + 25, x + 100, y + 28 + activeHeight.calculate(), mouseX, mouseY)) {
+            int currentY = 28;
+            for (ModuleComponent moduleComponent : moduleComponents) {
+                if (moduleComponent.onMouseClicked(x, y + currentY, mouseX, mouseY, mouseButton)) {
+                    return true;
+                }
+                currentY += moduleComponent.getHeight().calculate();
+            }
+        }
         return false;
+    }
+
+    public void onMouseReleased(int mouseButton) {
+        if (mouseButton == 1) dragging = false;
+        moduleComponents.forEach(moduleComponent -> moduleComponent.onMouseReleased(mouseButton));
+    }
+
+    public void tick() {
+        int height = 0;
+        for (ModuleComponent moduleComponent : moduleComponents) {
+            moduleComponent.tick();
+            height += moduleComponent.getExpectHeight();
+        }
+        if (expectHeight != height) {
+            activeHeight = FunctionUtil.easeOutQuad(activeHeight == null ? 0 : activeHeight.calculate(), height, 150);
+            expectHeight = height;
+        }
     }
 }

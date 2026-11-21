@@ -20,6 +20,7 @@ package io.github.floatingpointmc.client.nextgen.module;
 
 import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
+import io.github.floatingpointmc.client.nextgen.module.impl.combat.KillAura;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
@@ -44,7 +45,8 @@ public class ModuleRegistry {
         var worldImplementations = new ReferenceLinkedOpenHashSet<Module>();
         var miscImplementations = new ReferenceLinkedOpenHashSet<Module>();
         add(implementations, combatImplementations,
-                new AntiBot()
+                new AntiBot(),
+                new KillAura()
         );
         add(implementations, renderImplementations,
                 new ClickGUI()

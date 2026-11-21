@@ -21,8 +21,10 @@ package io.github.floatingpointmc.client.nextgen;
 import io.github.floatingpointmc.client.nextgen.command.CommandRegistry;
 import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import io.github.floatingpointmc.client.nextgen.module.ModuleRegistry;
+import io.github.floatingpointmc.client.nextgen.ui.font.FontRegistry;
 import io.github.vlouboos.standaloneevent.api.ApiProvider;
 import lombok.extern.log4j.Log4j2;
+import net.minecraft.client.gui.font.FontManager;
 
 @Log4j2
 public final class FloatClientNextgen {
@@ -48,6 +50,10 @@ public final class FloatClientNextgen {
         log.info("Loading languages...");
         currentMillis = System.currentTimeMillis();
         LanguageManager.init();
+        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+        log.info("Loading fonts...");
+        currentMillis = System.currentTimeMillis();
+        FontRegistry.init();
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
     }
 }

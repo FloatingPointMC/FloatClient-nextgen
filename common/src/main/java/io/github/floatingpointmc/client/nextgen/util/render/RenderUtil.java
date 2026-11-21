@@ -21,61 +21,28 @@ package io.github.floatingpointmc.client.nextgen.util.render;
 import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IGuiGraphicsExtractor;
 import io.github.floatingpointmc.client.nextgen.ui.shader.Shader;
 import io.github.floatingpointmc.client.nextgen.ui.shader.state.impl.ShaderRenderState;
-import io.github.floatingpointmc.client.nextgen.ui.shader.state.impl.TextRenderState;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3x2f;
 
 @UtilityClass
 public class RenderUtil {
     private static final Shader ROUNDED_RECT;
     private static final Shader ROUNDED_OUTLINE;
     private static final Shader ROUNDED_RECT_GRADIENT;
+    private static final Shader ROUNDED_RECT_GRADIENT_HORIZONTAL;
+    private static final Shader CHEVRON;
 
     static {
         ROUNDED_RECT = new Shader("rounded_rect");
         ROUNDED_OUTLINE = new Shader("rounded_outline");
         ROUNDED_RECT_GRADIENT = new Shader("rounded_rect_gradient");
-    }
-    public static void drawRect(@NotNull GuiGraphicsExtractor graphics, int x, int y, int x1, int y1, int color) {
-        drawGradientRect(graphics, x, y, x1, y1, color, color);
-    }
-
-    public static void drawGradientRect(@NotNull GuiGraphicsExtractor graphics, int x, int y, int x1, int y1, int topColor, int bottomColor) {
-        var state = rect(graphics, x, y, x1, y1, topColor, bottomColor);
-        if (state != null) state.submit(graphics);
-    }
-
-    public static @Nullable ShaderRenderState rect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x1, float y1, int topColor, int bottomColor) {
-        float width = x1 - x;
-        float height = y1 - y;
-        if (width <= 0 || height <= 0) return null;
-        int left = (int) Math.floor(x);
-        int top = (int) Math.floor(y);
-        ScreenRectangle bounds = new ScreenRectangle(left, top,
-                (int) Math.ceil(x + width) - left, (int) Math.ceil(y + height) - top).transformMaxBounds(graphics.pose());
-        ScreenRectangle scissor = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
-        if (scissor != null) bounds = bounds.intersection(scissor);
-        if (bounds == null) return null;
-        Matrix3x2f pose = new Matrix3x2f(graphics.pose());
-        return new ShaderRenderState(
-                RenderPipelines.GUI,
-                TextureSetup.noTexture(),
-                scissor,
-                bounds,
-                (out) -> {
-                    out.addVertexWith2DPose(pose, x, y).setColor(topColor);
-                    out.addVertexWith2DPose(pose, x, y1).setColor(bottomColor);
-                    out.addVertexWith2DPose(pose, x1, y).setColor(topColor);
-                    out.addVertexWith2DPose(pose, x1, y1).setColor(bottomColor);
-                });
+        ROUNDED_RECT_GRADIENT_HORIZONTAL = new Shader("rounded_rect_gradient_horizontal");
+        CHEVRON = new Shader("chevron");
     }
 
     public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x1, float y1, float radius, int color) {
@@ -118,11 +85,11 @@ public class RenderUtil {
         if (scissor != null) bounds = bounds.intersection(scissor);
         if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return;
         ROUNDED_OUTLINE.draw(graphics, x, y, x2, y2, scissor, bounds,
-                        (c >>> 16 & 0xFF) / 255f,
-                        (c >>> 8 & 0xFF) / 255f,
-                        (c & 0xFF) / 255f,
-                        (c >>> 24 & 0xFF) / 255f,
-                        radiusFraction, thicknessFraction).submit(graphics);
+                (c >>> 16 & 0xFF) / 255f,
+                (c >>> 8 & 0xFF) / 255f,
+                (c & 0xFF) / 255f,
+                (c >>> 24 & 0xFF) / 255f,
+                radiusFraction, thicknessFraction).submit(graphics);
     }
 
     public static void drawRoundedGradientRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x1, float y1, float radius, int topColor, int bottomColor) {
@@ -143,13 +110,40 @@ public class RenderUtil {
                 width, height, cornerRadius, y2, topColor, bottomColor).submit(graphics);
     }
 
-    public static void drawText(GuiGraphicsExtractor graphics, Component component, int x, int y,
-                                int color, float scale, boolean shadow) {
-        text(graphics, component, x, y, color, scale, shadow).submit(graphics);
+    public static void drawRoundedGradientHorizontal(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x1, int y1, int radius, int leftColor, int rightColor) {
+        float width = x1 - x;
+        float height = y1 - y;
+        if (width <= 0 || height <= 0) return;
+        float cornerRadius = Math.clamp(radius, 0f, 0.5f * Math.min(width, height));
+        ScreenRectangle bounds = new ScreenRectangle((int) x, (int) y,
+                (int) (Math.ceil(x + width) - x), (int) (Math.ceil(y + height) - y)).transformMaxBounds(graphics.pose());
+        ScreenRectangle scissor = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
+        if (scissor != null) bounds = bounds.intersection(scissor);
+        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) return;
+        ROUNDED_RECT_GRADIENT_HORIZONTAL.draw(graphics, x, y, x1, y1, scissor, bounds,
+                width, height, cornerRadius, leftColor, rightColor).submit(graphics);
     }
 
-    public static TextRenderState text(GuiGraphicsExtractor graphics, Component component, int x, int y,
-                                       int color, float scale, boolean shadow) {
-        return new TextRenderState(graphics, Minecraft.getInstance().font, component, x, y, color, scale, shadow);
+    public static void drawImage(@NotNull GuiGraphicsExtractor graphics, @NotNull Identifier location, int x, int y, int width, int height) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, location, x, y, 0, 0, width, height, width, height);
+    }
+
+    public static void drawChevron(@NotNull GuiGraphicsExtractor graphics, float centerX, float centerY,
+                                   float angle, int color) {
+        final float size = 5f;
+        final float half = size * 0.5f;
+        final float left = centerX - half;
+        final float top = centerY - half;
+        ScreenRectangle bounds = new ScreenRectangle((int) Math.floor(left), (int) Math.floor(top),
+                (int) Math.ceil(size), (int) Math.ceil(size)).transformMaxBounds(graphics.pose());
+        ScreenRectangle scissor = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
+        if (scissor != null) bounds = bounds.intersection(scissor);
+        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0 || (color >>> 24) == 0) return;
+        CHEVRON.draw(graphics, left, top, left + size, top + size, scissor, bounds,
+                (color >>> 16 & 0xFF) / 255f,
+                (color >>> 8 & 0xFF) / 255f,
+                (color & 0xFF) / 255f,
+                (color >>> 24 & 0xFF) / 255f,
+                angle, 0.5f, size, size).submit(graphics);
     }
 }

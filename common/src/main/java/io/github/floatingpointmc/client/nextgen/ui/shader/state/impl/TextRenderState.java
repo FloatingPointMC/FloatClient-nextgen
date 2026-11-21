@@ -19,30 +19,34 @@
 package io.github.floatingpointmc.client.nextgen.ui.shader.state.impl;
 
 import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IGuiGraphicsExtractor;
+import io.github.floatingpointmc.client.nextgen.ui.font.GlyphDraw;
+import io.github.floatingpointmc.client.nextgen.ui.font.GuiTextLayout;
 import io.github.floatingpointmc.client.nextgen.ui.shader.state.OperationRenderState;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
-import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
-import net.minecraft.network.chat.Component;
 import org.joml.Matrix3x2f;
 
 public final class TextRenderState extends OperationRenderState {
-    private final GuiTextRenderState text;
-    private final boolean visible;
+    private final GuiTextLayout layout;
+    private final Matrix3x2f pose;
+    private final ScreenRectangle clip;
+    private final int color;
+    private final boolean shadow;
 
-    public TextRenderState(GuiGraphicsExtractor graphics, Font font, Component component,
-                           int x, int y, int color, float scale, boolean shadow) {
-        var pose = new Matrix3x2f(graphics.pose());
-        // Scale about the text origin. Keep vanilla glyph positions for the ordinary scale.
-        if (scale != 1f) pose.translate(x, y).scale(scale).translate(-x, -y);
-        text = new GuiTextRenderState(font, component.getVisualOrderText(), pose, x, y, color, 0,
-                shadow, false, ((IGuiGraphicsExtractor) graphics).floatclient$getScissor());
-        visible = (color >>> 24) != 0;
+    public TextRenderState(GuiGraphicsExtractor graphics, GuiTextLayout layout,
+                           float x, float y, int color, boolean shadow) {
+        this.layout = layout;
+        pose = new Matrix3x2f(graphics.pose()).translate(x, y);
+        clip = ((IGuiGraphicsExtractor) graphics).floatclient$getScissor();
+        this.color = color;
+        this.shadow = shadow;
     }
 
     @Override
     public void submit(GuiRenderState state) {
-        if (visible) state.addText(text);
+        if ((color >>> 24) == 0) return;
+        if (shadow) GlyphDraw.submit(state, layout, pose, clip, color, true);
+        GlyphDraw.submit(state, layout, pose, clip, color, false);
     }
 }
