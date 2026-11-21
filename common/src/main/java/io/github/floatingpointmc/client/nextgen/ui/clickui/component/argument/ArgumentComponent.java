@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public abstract class ArgumentComponent<T extends Argument<?>> {
-    private final @NotNull Module parent;
+    protected final @NotNull Module parent;
     protected final @NotNull T argument;
 
     public abstract void draw(@NotNull GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY);

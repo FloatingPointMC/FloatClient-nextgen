@@ -20,6 +20,7 @@ package io.github.floatingpointmc.client.nextgen.ui.clickui;
 
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.CategoryComponent;
+import io.github.floatingpointmc.client.nextgen.ui.clickui.component.TopLayer;
 import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
 import io.github.floatingpointmc.client.nextgen.util.math.MathUtil;
 import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
@@ -28,6 +29,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ import java.util.List;
 public final class ClickUI extends Screen {
     private static final @NotNull ClickUI INSTANCE;
     private static final List<CategoryComponent> categories;
+    public static @Nullable TopLayer topLayer = null;
     public static @NotNull FunctionUtil<Integer> alphaAnimation = FunctionUtil.done(0);
 
     static {
@@ -66,6 +69,10 @@ public final class ClickUI extends Screen {
         BlurUtil.blurAll(graphics, 2);
         graphics.fill(0, 0, width, height, background);
         categories.forEach(categoryComponent -> categoryComponent.draw(graphics, mouseX, mouseY));
+        if (topLayer != null) {
+            topLayer.draw(graphics, mouseX, mouseY);
+            if (topLayer.finished()) topLayer = null;
+        }
     }
 
     // who the fuck is using double here while using int when rendering???
@@ -73,6 +80,9 @@ public final class ClickUI extends Screen {
     public boolean mouseClicked(@NotNull MouseButtonEvent event, boolean doubleClick) {
         double mouseX = event.x(), mouseY = event.y();
         int mouseButton = event.button();
+        if (topLayer != null && topLayer.onMouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
+        }
         for (CategoryComponent categoryComponent : categories) {
             if (categoryComponent.onMouseClicked(mouseX, mouseY, mouseButton)) return true;
         }

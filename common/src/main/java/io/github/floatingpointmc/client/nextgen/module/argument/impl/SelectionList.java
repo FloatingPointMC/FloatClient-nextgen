@@ -19,6 +19,7 @@
 package io.github.floatingpointmc.client.nextgen.module.argument.impl;
 
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class SelectionList extends Argument<String> {
+    @Getter
     private final List<String> modes;
 
     public SelectionList(@NotNull String identity, @NotNull String value, @NotNull String @NotNull ... selectables) {

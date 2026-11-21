@@ -21,11 +21,13 @@ package io.github.floatingpointmc.client.nextgen.ui.clickui.component;
 import io.github.floatingpointmc.client.nextgen.module.Module;
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.CheckBox;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.Slider;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.ClickUI;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.Colors;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.ArgumentComponent;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.CheckBoxComponent;
+import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.SelectionListComponent;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.SliderComponent;
 import io.github.floatingpointmc.client.nextgen.ui.font.FontRegistry;
 import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
@@ -56,6 +58,8 @@ public class ModuleComponent {
                 components.add(new CheckBoxComponent(module, checkBox));
             } else if (argument instanceof Slider slider) {
                 components.add(new SliderComponent(module, slider));
+            } else if (argument instanceof SelectionList selectionList) {
+                components.add(new SelectionListComponent(module, selectionList));
             }
         }
         expectHeight = 20;

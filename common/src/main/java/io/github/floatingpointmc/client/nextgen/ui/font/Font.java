@@ -37,6 +37,11 @@ public final class Font {
     }
 
     public void drawString(GuiGraphicsExtractor graphics, String text, float size,
+                           float x, float y, int color) {
+        text(graphics, text, size, x, y, color, false).submit(graphics);
+    }
+
+    public void drawString(GuiGraphicsExtractor graphics, String text, float size,
                            float x, float y, int color, boolean shadow) {
         text(graphics, text, size, x, y, color, shadow).submit(graphics);
     }

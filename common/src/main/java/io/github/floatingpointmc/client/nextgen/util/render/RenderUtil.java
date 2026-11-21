@@ -125,7 +125,11 @@ public class RenderUtil {
     }
 
     public static void drawImage(@NotNull GuiGraphicsExtractor graphics, @NotNull Identifier location, int x, int y, int width, int height) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, location, x, y, 0, 0, width, height, width, height);
+        drawImage(graphics, location, x, y, width, height, -1);
+    }
+
+    public static void drawImage(@NotNull GuiGraphicsExtractor graphics, @NotNull Identifier location, int x, int y, int width, int height, int color) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, location, x, y, 0, 0, width, height, width, height, color);
     }
 
     public static void drawChevron(@NotNull GuiGraphicsExtractor graphics, float centerX, float centerY,
