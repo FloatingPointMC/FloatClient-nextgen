@@ -23,10 +23,7 @@ import com.google.gson.JsonParser;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 @UtilityClass
 public class IOUtil {
@@ -42,5 +39,14 @@ public class IOUtil {
         byte[] bytes = new byte[in.available()];
         if (in.read(bytes) < 0) return new byte[0];
         return bytes;
+    }
+
+    @SuppressWarnings("all")
+    public static void writeFileFromJson(File file, @NotNull JsonObject json) {
+        try (FileWriter fw = new FileWriter(file, false)) {
+            fw.write(json.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -31,17 +31,18 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 
-public class Target extends Module {
-    private static final CheckBox players = new CheckBox("Players", true);
-    private static final CheckBox invisible = new CheckBox("Invisibles", true, players::getValue);
-    private static final CheckBox mobs = new CheckBox("Mobs", true);
-    private static final CheckBox animals = new CheckBox("Animals", true);
-    private static final CheckBox villagers = new CheckBox("Villagers", true);
-    private static final CheckBox fireballs = new CheckBox("Fireballs", true);
+public class
+Target extends Module {
+    private static final CheckBox player = new CheckBox("player", true);
+    private static final CheckBox invisible = new CheckBox("invisible", true, player::getValue);
+    private static final CheckBox mob = new CheckBox("mobs", true);
+    private static final CheckBox animal = new CheckBox("animal", true);
+    private static final CheckBox villager = new CheckBox("villager", true);
+    private static final CheckBox fireball = new CheckBox("fireball", true);
 
     public Target() {
         super("target", Category.MISC, false);
-        addArguments(players, invisible, mobs, animals, villagers, fireballs);
+        addArguments(player, invisible, mob, animal, villager, fireball);
     }
 
     public static boolean notQualified(Entity entity) {
@@ -49,12 +50,12 @@ public class Target extends Module {
         if (entity instanceof LivingEntity living) {
             if (!living.isAlive()) return true;
             if (living.getActiveEffects().stream().anyMatch(e -> e.is(MobEffects.INVISIBILITY)) && !invisible.getValue()) return true;
-            if (living instanceof Player) return !players.getValue();
-            if (living instanceof Mob) return !mobs.getValue();
-            if (living instanceof Animal) return !animals.getValue();
-            if (living instanceof Villager) return !villagers.getValue();
+            if (living instanceof Player) return !player.getValue();
+            if (living instanceof Mob) return !mob.getValue();
+            if (living instanceof Animal) return !animal.getValue();
+            if (living instanceof Villager) return !villager.getValue();
         }
-        if (entity instanceof Fireball) return !fireballs.getValue();
+        if (entity instanceof Fireball) return !fireball.getValue();
         return true;
     }
 }

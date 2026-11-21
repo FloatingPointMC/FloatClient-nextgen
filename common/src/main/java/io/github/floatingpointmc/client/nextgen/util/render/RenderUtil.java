@@ -22,6 +22,7 @@ import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IGuiGraphicsExt
 import io.github.floatingpointmc.client.nextgen.ui.shader.Shader;
 import io.github.floatingpointmc.client.nextgen.ui.shader.state.impl.ShaderRenderState;
 import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -29,6 +30,7 @@ import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Log4j2
 @UtilityClass
 public class RenderUtil {
     private static final Shader ROUNDED_RECT;
@@ -43,6 +45,10 @@ public class RenderUtil {
         ROUNDED_RECT_GRADIENT = new Shader("rounded_rect_gradient");
         ROUNDED_RECT_GRADIENT_HORIZONTAL = new Shader("rounded_rect_gradient_horizontal");
         CHEVRON = new Shader("chevron");
+    }
+
+    public static void init() {
+        log.info("Loaded render utilities.");
     }
 
     public static void drawRoundedRect(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x1, float y1, float radius, int color) {

@@ -28,6 +28,7 @@ import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,10 @@ public class Module {
     protected void onEnable() {}
 
     protected void onDisable() {}
+
+    public @Nullable Argument<?> getSuffix() {
+        return null;
+    }
 
     public void setEnabled(boolean enabled) {
         setEnabled(enabled, true);

@@ -18,13 +18,23 @@
 
 package io.github.floatingpointmc.client.nextgen.module;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import io.github.floatingpointmc.client.nextgen.config.ConfigManager;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
+import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.CheckBox;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.Slider;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.KillAura;
 import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.HUD;
+import io.github.floatingpointmc.client.nextgen.module.impl.render.ModuleList;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.Rotation;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
@@ -59,6 +69,7 @@ public class ModuleRegistry {
         add(implementations, renderImplementations,
                 new ClickGUI(),
                 new HUD(),
+                new ModuleList(),
                 new Rotation()
         );
         add(implementations, miscImplementations,
@@ -77,7 +88,65 @@ public class ModuleRegistry {
     }
 
     public static void init() {
+        JsonObject json = ConfigManager.readConfig("module");
+        for (Module module : modules.values()) {
+            if (json.has(module.getIdentity())) {
+                JsonElement moduleElement = json.getAsJsonObject(module.getIdentity());
+                if (moduleElement.isJsonObject()) {
+                    JsonObject moduleJson = moduleElement.getAsJsonObject();
+                    if (moduleJson.has("enabled") && moduleJson.get("enabled").isJsonPrimitive()) {
+                        if (moduleJson.get("enabled").getAsBoolean()) enabledModules.add(module);
+                        else enabledModules.remove(module);
+                    }
+                    if (moduleJson.has("key") && moduleJson.get("key").isJsonPrimitive() && moduleJson.get("key").getAsJsonPrimitive().isNumber()) {
+                        module.setKey(moduleJson.get("key").getAsInt());
+                    }
+                    if (moduleJson.has("arguments") && moduleJson.get("arguments").isJsonObject()) {
+                        JsonObject argumentsJson = moduleJson.getAsJsonObject("arguments");
+                        for (Argument<?> argument : module.getArguments()) {
+                            if (argumentsJson.has(argument.identity) && argumentsJson.get(argument.identity).isJsonPrimitive()) {
+                                JsonPrimitive argumentJson = argumentsJson.getAsJsonPrimitive(argument.identity);
+                                switch (argument) {
+                                    case CheckBox checkBox when argumentJson.isBoolean() ->
+                                            checkBox.setValue(argumentJson.getAsBoolean());
+                                    case Slider slider when argumentJson.isNumber() ->
+                                            slider.setValue(argumentJson.getAsDouble());
+                                    case SelectionList selectionList when argumentJson.isString() ->
+                                            selectionList.setValue(argumentJson.getAsString());
+                                    default -> {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         log.info("Loaded {} modules.", modules.size());
+    }
+
+    public static void shutdown() {
+        JsonObject json = new JsonObject();
+        for (Module module : modules.values()) {
+            JsonObject moduleJson = new JsonObject();
+            moduleJson.addProperty("enabled", module.isEnabled());
+            moduleJson.addProperty("key", module.getKey());
+            if (!module.getArguments().isEmpty()) {
+                JsonObject argumentsJson = new JsonObject();
+                for (Argument<?> argument : module.getArguments()) {
+                    if (argument instanceof CheckBox checkBox) {
+                        argumentsJson.addProperty(checkBox.identity, checkBox.getValue());
+                    } else if (argument instanceof Slider slider) {
+                        argumentsJson.addProperty(slider.identity, slider.getValue());
+                    } else if (argument instanceof SelectionList selectionList) {
+                        argumentsJson.addProperty(selectionList.identity, selectionList.getValue());
+                    }
+                }
+                moduleJson.add("arguments", argumentsJson);
+            }
+            json.add(module.getIdentity(), moduleJson);
+        }
+        ConfigManager.writeConfig("module", json);
     }
 
     private static void add(@NotNull Object2ReferenceLinkedOpenHashMap<String, Module> implementations, @NotNull ReferenceLinkedOpenHashSet<Module> implementationsInCategory, @NotNull Module @NotNull ... modules) {
@@ -115,5 +184,9 @@ public class ModuleRegistry {
 
     public static void enable(@NotNull Module module) {
         enabledModules.add(module);
+    }
+
+    public static ReferenceCollection<Module> all() {
+        return ReferenceCollections.unmodifiable(modules.values());
     }
 }

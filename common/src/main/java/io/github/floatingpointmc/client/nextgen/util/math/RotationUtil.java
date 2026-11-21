@@ -25,12 +25,14 @@ import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Log4j2
 @UtilityClass
 public class RotationUtil {
     private static final Minecraft mc = Minecraft.getInstance();
@@ -40,6 +42,10 @@ public class RotationUtil {
 
     static {
         StandaloneEventAPI.getApi().register(RotationUtil.class);
+    }
+
+    public static void init() {
+        log.info("Loaded rotation utilities.");
     }
 
     @EventHandler(Long.MAX_VALUE)

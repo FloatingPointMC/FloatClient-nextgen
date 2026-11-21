@@ -28,22 +28,12 @@ import io.github.floatingpointmc.client.nextgen.util.io.KeyboardUtil;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackMetadataResources;
-import net.minecraft.server.packs.metadata.MetadataSectionType;
-import net.minecraft.server.packs.resources.IoSupplier;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
@@ -78,5 +68,10 @@ public class MinecraftMixin {
     @ModifyArg(method = "createTitle", at = @At(value = "INVOKE", target = "Ljava/lang/StringBuilder;<init>(Ljava/lang/String;)V"))
     private String onTitle(String str) {
         return "Float-Nextgen %s | %s".formatted(FloatClientNextgen.VERSION, str);
+    }
+
+    @Inject(method = "close", at = @At("HEAD"))
+    private void onClose(CallbackInfo ci) {
+        FloatClientNextgen.shutdown();
     }
 }

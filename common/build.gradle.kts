@@ -19,7 +19,6 @@ dependencies {
     // compileOnly("dev.architectury:architectury:${rootProject.property("architectury_api_version")}")
 
     standaloneEventBundle("io.github.vlouboos:standaloneevent-common:1.7")
-    implementation("org.json:json:20260814")
     compileOnly("org.projectlombok:lombok:1.18.46")
     annotationProcessor("org.projectlombok:lombok:1.18.46")
 }

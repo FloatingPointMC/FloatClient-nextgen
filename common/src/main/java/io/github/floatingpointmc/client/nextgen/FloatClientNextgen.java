@@ -19,12 +19,14 @@
 package io.github.floatingpointmc.client.nextgen;
 
 import io.github.floatingpointmc.client.nextgen.command.CommandRegistry;
+import io.github.floatingpointmc.client.nextgen.config.ConfigManager;
 import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import io.github.floatingpointmc.client.nextgen.module.ModuleRegistry;
 import io.github.floatingpointmc.client.nextgen.ui.font.FontRegistry;
+import io.github.floatingpointmc.client.nextgen.util.math.RotationUtil;
+import io.github.floatingpointmc.client.nextgen.util.render.RenderUtil;
 import io.github.vlouboos.standaloneevent.api.ApiProvider;
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.client.gui.font.FontManager;
 
 @Log4j2
 public final class FloatClientNextgen {
@@ -38,24 +40,41 @@ public final class FloatClientNextgen {
         long currentMillis = System.currentTimeMillis();
         ApiProvider.injectApi(false);
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+
+        log.info("Loading config manager...");
+        currentMillis = System.currentTimeMillis();
+        ConfigManager.init();
+        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+
         log.info("Loading modules...");
         currentMillis = System.currentTimeMillis();
         ModuleRegistry.init();
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+
+        log.info("Loading utilities...");
+        currentMillis = System.currentTimeMillis();
+        RotationUtil.init();
+        RenderUtil.init();
+        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+        
         log.info("Loading commands...");
         currentMillis = System.currentTimeMillis();
         CommandRegistry.init();
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
-        log.info("Loading config...");
-        currentMillis = System.currentTimeMillis();
-        log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+
         log.info("Loading languages...");
         currentMillis = System.currentTimeMillis();
         LanguageManager.init();
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+
         log.info("Loading fonts...");
         currentMillis = System.currentTimeMillis();
         FontRegistry.init();
         log.info("Finished in {}ms.", System.currentTimeMillis() - currentMillis);
+    }
+
+    public static void shutdown() {
+        log.info("Shutting down...");
+        ModuleRegistry.shutdown();
     }
 }

@@ -3,6 +3,7 @@ package io.github.floatingpointmc.client.nextgen.module.impl.combat;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.module.Module;
+import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.CheckBox;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.RangeSlider;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -128,5 +130,10 @@ public class KillAura extends Module {
                     case "fov" -> Comparator.comparing(target -> RotationUtil.getRotationOffsetToVec(target.hitVec()).yaw());
                     default -> Comparator.comparing(Attackable::health);
                 });
+    }
+
+    @Override
+    public @Nullable Argument<?> getSuffix() {
+        return mode;
     }
 }
