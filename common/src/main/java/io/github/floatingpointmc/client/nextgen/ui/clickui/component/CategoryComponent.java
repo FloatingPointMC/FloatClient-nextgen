@@ -30,7 +30,6 @@ import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
 import io.github.floatingpointmc.client.nextgen.util.render.RenderUtil;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -69,11 +68,17 @@ public final class CategoryComponent {
             currentY += moduleComponent.getHeight().calculate();
         }
         int bottom = y + currentY;
-        BlurUtil.bloomKawase(graphics, 2, 3,
-                capture -> capture.roundedRect(x, y, x + 100, bottom, 10, pureExtremeDark));
+        BlurUtil.bloomKawase(graphics, 2, 3, RenderUtil.roundedRect(graphics, x, y, x + 100, bottom, 10, pureExtremeDark));
         RenderUtil.drawRoundedRect(graphics, x, y, x + 100, y + currentY, 10, background);
         RenderUtil.drawRoundedOutline(graphics, x, y, x + 100, y + currentY, 10, 1, lightWhite);
-        graphics.text(Minecraft.getInstance().font, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite);
+        RenderUtil.drawRoundedGradientRect(graphics, x, y, x + 100, y + 14, 10, 14, shadow, shadowBottom);
+        BlurUtil.bloomKawase(graphics, 2, 1, RenderUtil.roundedRect(graphics, x + 9, y + 7, x + 22, y + 20, 4.5f, MathUtil.reAlpha(Colors.MAIN_THEME, (int) (ClickUI.alphaAnimation.calculate() * 0.5f))));
+        RenderUtil.drawRoundedGradientRect(graphics, x + 9, y + 7, x + 22, y + 20, 4.5f, pureLight, pureDark);
+        RenderUtil.drawText(graphics, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite, 1f, true);
+
+        BlurUtil.bloomKawase(graphics, 2, 1, RenderUtil.text(graphics, Component.literal(category.getName()).withStyle(Style.EMPTY.withFont(Fonts.GEIST_BOLD)), x + 26, y + 10, pureWhite, 1.0f, false));
+        //RenderUtil.drawImage(new ResourceLocation("float", "clickui/" + category.name.toLowerCase() + ".png"), x + 12, y + 10, 7, 7);
+        //FontManager.geist16b.drawString(category.name, x + 26, y + 10, pureWhite, 1f, true).submit(graphics);
 
     }
 

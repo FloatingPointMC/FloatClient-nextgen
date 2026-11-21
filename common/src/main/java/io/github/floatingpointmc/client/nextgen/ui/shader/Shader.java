@@ -21,6 +21,7 @@ package io.github.floatingpointmc.client.nextgen.ui.shader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.renderpearl.api.pipeline.*;
+import io.github.floatingpointmc.client.nextgen.ui.shader.state.impl.ShaderRenderState;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -40,7 +41,7 @@ public final class Shader {
 
     public Shader(@NotNull String name) {
         pipeline = positionUvPipeline(name, transforms()
-                .withUniform("Parameters", UniformType.UNIFORM_BUFFER).build(),
+                        .withUniform("Parameters", UniformType.UNIFORM_BUFFER).build(),
                 new ColorTargetState(BlendFunction.TRANSLUCENT));
     }
 
@@ -68,7 +69,10 @@ public final class Shader {
                 .build();
     }
 
-    public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2, @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds) {
+    public <T extends Number> @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics,
+                                                              float x, float y, float x2, float y2,
+                                                              @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds,
+                                                              @NotNull T @NotNull ... uniforms) {
         Matrix3x2fc snapshot = new Matrix3x2f(graphics.pose());
         return new ShaderRenderState(pipeline, TextureSetup.noTexture(), scissor, bounds, out -> {
             vertex(out, snapshot, x, y, 0, 0);
@@ -77,27 +81,20 @@ public final class Shader {
             vertex(out, snapshot, x, y, 0, 0);
             vertex(out, snapshot, x2, y2, 1, 1);
             vertex(out, snapshot, x2, y, 1, 0);
-        });
+        }, bundle(uniforms));
     }
 
-    public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2,
-                                           int color, float first,
-                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds) {
-        return draw(graphics, x, y, x2, y2, color, first, 0, scissor, bounds);
-    }
-
-    public @NotNull ShaderRenderState draw(@NotNull GuiGraphicsExtractor graphics, float x, float y, float x2, float y2,
-                                           int color, float first, float second,
-                                           @Nullable ScreenRectangle scissor, @NotNull ScreenRectangle bounds) {
-        Matrix3x2fc snapshot = new Matrix3x2f(graphics.pose());
-        return new ShaderRenderState(pipeline, TextureSetup.noTexture(), scissor, bounds, out -> {
-            vertex(out, snapshot, x, y, 0, 0);
-            vertex(out, snapshot, x, y2, 0, 1);
-            vertex(out, snapshot, x2, y2, 1, 1);
-            vertex(out, snapshot, x, y, 0, 0);
-            vertex(out, snapshot, x2, y2, 1, 1);
-            vertex(out, snapshot, x2, y, 1, 0);
-        }, new ShaderRenderState.Uniforms(color, first, second, 0, 0));
+    private <T extends Number> @NotNull ShaderRenderState.Uniforms bundle(T[] uniforms) {
+        ShaderRenderState.Uniform[] res = new ShaderRenderState.Uniform[uniforms.length];
+        for (int i = 0; i < uniforms.length; i++) {
+            T uniform = uniforms[i];
+            if (uniform instanceof Integer) {
+                res[i] = new ShaderRenderState.UniformI(uniform.intValue());
+            } else  if (uniform instanceof Float) {
+                res[i] = new ShaderRenderState.UniformF(uniform.floatValue());
+            } else throw new RuntimeException("Unsupported uniform type: " + uniform.getClass().getName());
+        }
+        return new ShaderRenderState.Uniforms(res);
     }
 
     private static void vertex(VertexConsumer out, Matrix3x2fc pose, float x, float y,

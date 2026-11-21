@@ -6,10 +6,15 @@ layout(location = 0) out vec4 fragColor;
 
 layout(std140) uniform Parameters {
     vec2 rectSize;
-    vec4 color;
+    uint color;
     float radius;
     float thickness;
 };
+
+vec4 rgba(uint argb) {
+    return vec4((argb >> 16u) & 255u, (argb >> 8u) & 255u,
+            argb & 255u, argb >> 24u) / 255.0;
+}
 
 float roundSDF(vec2 p, vec2 b, float r) {
     return length(max(abs(p) - b, vec2(0.0))) - r;
@@ -30,9 +35,9 @@ void main() {
     float strokeDist = abs(dist) - halfThickness;
     float strokeAlpha = 1.0 - smoothstep(-0.5, 0.5, strokeDist);
     float leftMask = smoothstep(-0.5, 0.5, p.x - b.x);
-    float finalAlpha = strokeAlpha * leftMask * color.a;
+    float finalAlpha = strokeAlpha * leftMask * rgba(color).a;
     if (finalAlpha <= 0.0) {
         discard;
     }
-    fragColor = vec4(color.rgb, finalAlpha);
+    fragColor = vec4(rgba(color).rgb, finalAlpha);
 }

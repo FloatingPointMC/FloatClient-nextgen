@@ -19,16 +19,15 @@
 package io.github.floatingpointmc.client.nextgen.mixin.impl;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import io.github.floatingpointmc.client.nextgen.ui.shader.ShaderRenderState;
+import io.github.floatingpointmc.client.nextgen.ui.shader.state.impl.ShaderRenderState;
+import io.github.floatingpointmc.client.nextgen.ui.shader.state.OperationBoundary;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.DynamicGpuDataStorageMapped;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,28 +51,26 @@ public abstract class GuiRendererMixin {
     @Shadow @Final private List<?> draws;
     @Shadow private RenderPipeline previousPipeline;
     @Unique private ShaderRenderState.Uniforms floatclient$previous;
-    @Unique private ShaderRenderState.Operation floatclient$previousTarget;
+    @Unique private boolean floatclient$previousBoundary;
     @Unique private final Map<Object, ShaderRenderState.Uniforms> floatclient$styles = new IdentityHashMap<>();
-    @Unique private final Map<Object, GpuBufferSlice> floatclient$colors = new IdentityHashMap<>();
     @Unique private final Map<Object, GpuBufferSlice> floatclient$params = new IdentityHashMap<>();
-    @Unique private final Map<Object, ShaderRenderState.Operation> floatclient$targets = new IdentityHashMap<>();
+    @Unique private final Map<Object, OperationBoundary> floatclient$boundaries = new IdentityHashMap<>();
     @Unique private DynamicGpuDataStorageMapped<ShaderRenderState.Uniforms> floatclient$storage;
-    @Unique private GpuBufferSlice floatclient$defaultTransform;
 
     @Inject(method = "addElementToMesh", at = @At("HEAD"))
     private void floatclient$checkBatch(GuiElementRenderState element, CallbackInfo ci) {
         var style = element instanceof ShaderRenderState shader ? shader.uniforms() : null;
-        var target = element instanceof ShaderRenderState shader ? shader.operation() : null;
-        if (!Objects.equals(style, floatclient$previous) || target != floatclient$previousTarget) previousPipeline = null;
+        boolean boundary = element instanceof OperationBoundary;
+        if (boundary || floatclient$previousBoundary || !Objects.equals(style, floatclient$previous)) previousPipeline = null;
         floatclient$previous = style;
-        floatclient$previousTarget = target;
+        floatclient$previousBoundary = boundary;
     }
 
     @Inject(method = "addElementToMesh", at = @At("RETURN"))
     private void floatclient$recordBatch(GuiElementRenderState element, CallbackInfo ci) {
         if (floatclient$previous != null) floatclient$styles.put(draws.getLast(), floatclient$previous);
-        if (element instanceof ShaderRenderState shader && shader.operation() != null) {
-            floatclient$targets.put(draws.getLast(), shader.operation());
+        if (element instanceof OperationBoundary boundary) {
+            floatclient$boundaries.put(draws.getLast(), boundary);
         }
     }
 
@@ -86,18 +83,26 @@ public abstract class GuiRendererMixin {
             target = "Lnet/minecraft/client/gui/render/GuiRenderer;executeDrawRange(Ljava/util/function/Supplier;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;II)V"))
     private void floatclient$drawRanges(GuiRenderer renderer, Supplier<String> label, RenderTarget main,
                                         GpuBufferSlice transform, int first, int end) {
-        if (floatclient$targets.isEmpty()) {
+        if (floatclient$boundaries.isEmpty()) {
             executeDrawRange(label, main, transform, first, end);
             return;
         }
-        while (first < end) {
-            var operation = floatclient$targets.get(draws.get(first));
-            int start = first++;
-            while (first < end && floatclient$targets.get(draws.get(first)) == operation) first++;
-            int stop = first;
-            if (operation == null) executeDrawRange(label, main, transform, start, stop);
-            else operation.render(main, target -> executeDrawRange(label, target, transform, start, stop));
+        int cursor = first;
+        for (int i = first; i < end; i++) {
+            var boundary = floatclient$boundaries.get(draws.get(i));
+            if (boundary == null) continue;
+            if (cursor < i) executeDrawRange(label, main, transform, cursor, i);
+            int start = i + 1;
+            do { i++; } while (i < end && !floatclient$boundaries.containsKey(draws.get(i)));
+            if (boundary.operation() == null || i == end || floatclient$boundaries.get(draws.get(i)).operation() != null)
+                throw new IllegalStateException("Unpaired GUI operation boundary");
+            int stop = i;
+            boundary.operation().render(main, target -> {
+                if (start < stop) executeDrawRange(label, target, transform, start, stop);
+            });
+            cursor = i + 1;
         }
+        if (cursor < end) executeDrawRange(label, main, transform, cursor, end);
     }
 
     // Vanilla supplies the GUI view matrix here, before either GUI render pass opens.
@@ -106,48 +111,29 @@ public abstract class GuiRendererMixin {
     private Matrix4f floatclient$uploadStyles(Matrix4f matrix) {
         if (floatclient$styles.isEmpty()) return matrix;
         if (floatclient$storage == null) {
-            floatclient$storage = new DynamicGpuDataStorageMapped<>("GUI shader parameters", 16, GpuBuffer.USAGE_UNIFORM, 16);
+            floatclient$storage = new DynamicGpuDataStorageMapped<>("GUI shader parameters", 32, GpuBuffer.USAGE_UNIFORM, 32);
         }
         for (var entry : floatclient$styles.entrySet()) {
             var style = entry.getValue();
-            floatclient$colors.put(entry.getKey(), RenderSystem.getDynamicUniforms()
-                    .writeTransform(matrix, ARGB.vector4fFromARGB32(style.color())));
             floatclient$params.put(entry.getKey(), floatclient$storage.writeData(style));
         }
         return matrix;
     }
 
-    @Inject(method = "executeDrawRange", at = @At("HEAD"))
-    private void floatclient$captureTransform(Supplier<String> label, RenderTarget target, GpuBufferSlice transform,
-                                              int first, int end, CallbackInfo ci) {
-        floatclient$defaultTransform = transform;
-    }
-
     @Inject(method = "executeDraw", at = @At(value = "INVOKE",
             target = "Lcom/mojang/renderpearl/api/commands/RenderPass;drawIndexed(IIIII)V"))
     private void floatclient$bindStyle(@Coerce Object draw, RenderPass pass, CallbackInfo ci) {
-        var color = floatclient$colors.get(draw);
-        if (color != null) {
-            pass.setUniform("DynamicTransforms", color);
-            pass.setUniform("Parameters", floatclient$params.get(draw));
-        }
-    }
-
-    @Inject(method = "executeDraw", at = @At(value = "INVOKE",
-            target = "Lcom/mojang/renderpearl/api/commands/RenderPass;drawIndexed(IIIII)V", shift = At.Shift.AFTER))
-    private void floatclient$restoreTransform(@Coerce Object draw, RenderPass pass, CallbackInfo ci) {
-        if (floatclient$colors.containsKey(draw)) pass.setUniform("DynamicTransforms", floatclient$defaultTransform);
+        var params = floatclient$params.get(draw);
+        if (params != null) pass.setUniform("Parameters", params);
     }
 
     @Inject(method = "render", at = @At("RETURN"))
     private void floatclient$finishFrame(CallbackInfo ci) {
         floatclient$styles.clear();
-        floatclient$colors.clear();
         floatclient$params.clear();
-        floatclient$targets.clear();
+        floatclient$boundaries.clear();
         floatclient$previous = null;
-        floatclient$previousTarget = null;
-        floatclient$defaultTransform = null;
+        floatclient$previousBoundary = false;
         if (floatclient$storage != null) floatclient$storage.endFrame();
     }
 

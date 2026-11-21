@@ -7,6 +7,7 @@ layout(location = 0) out vec4 fragColor;
 #include <minecraft:dynamictransforms.glsl>
 
 layout(std140) uniform Parameters {
+    vec4 color;
     float radiusFraction;
     float thicknessFraction;
 };
@@ -26,9 +27,9 @@ void main() {
     float aa = max(fwidth(dist), 1e-4);
     float outerAlpha = 1.0 - smoothstep(-aa, aa, dist);
     float innerAlpha = 1.0 - smoothstep(-aa, aa, dist + thickness);
-    float strokeAlpha = max(outerAlpha - innerAlpha, 0.0) * ColorModulator.a;
+    float strokeAlpha = max(outerAlpha - innerAlpha, 0.0) * color.a;
     if (strokeAlpha <= 0.0) {
         discard;
     }
-    fragColor = vec4(ColorModulator.rgb, strokeAlpha);
+    fragColor = vec4(color.rgb, strokeAlpha);
 }

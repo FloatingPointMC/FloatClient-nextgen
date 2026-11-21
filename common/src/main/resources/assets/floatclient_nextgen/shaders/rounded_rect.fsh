@@ -6,6 +6,7 @@ layout(location = 0) in vec2 texCoord;
 #include <minecraft:dynamictransforms.glsl>
 
 layout(std140) uniform Parameters {
+    vec4 color;
     float radiusFraction;
 };
 
@@ -24,12 +25,12 @@ void main() {
     float aa = fwidth(distance);
     float coverage = 1.0 - smoothstep(-aa * 0.5, aa * 0.5, distance);
 
-    float alpha = coverage * ColorModulator.a;
+    float alpha = coverage * color.a;
 
     if (alpha <= 0.0) discard;
 
     fragColor = vec4(
-            ColorModulator.rgb,
+            color.rgb,
             alpha
     );
 }
