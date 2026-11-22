@@ -69,11 +69,12 @@ public class KillAura extends Module {
         searchRange *= searchRange;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (Target.notQualified(entity)) continue;
-            if (entity.distanceToSqr(selfEye) > searchRange) continue;
+            Vec3 closestVec = LocationUtil.closestVecTo(entity, selfEye);
+            if (closestVec.distanceToSqr(selfEye) > searchRange) continue;
             if (entity instanceof LivingEntity living) {
-                targets.add(new Attackable(living, living.getHealth(), LocationUtil.closestVecTo(living, selfEye)));
+                targets.add(new Attackable(living, living.getHealth(), closestVec));
             } else {
-                targets.add(new Attackable(entity, 0, LocationUtil.closestVecTo(entity, selfEye)));
+                targets.add(new Attackable(entity, 0, LocationUtil.closestVecTo(entity, closestVec)));
             }
         }
         if (targets.isEmpty()) {
