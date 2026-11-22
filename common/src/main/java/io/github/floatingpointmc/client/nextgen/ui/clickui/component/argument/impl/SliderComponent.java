@@ -57,7 +57,7 @@ public class SliderComponent extends ArgumentComponent<Slider> {
         double min = argument.getMinimum();
         double max = argument.getMaximum();
         if (dragging) {
-            double percentage = Math.clamp((mouseX - x + 2) / 68.0, 0, 1);
+            double percentage = Math.clamp((mouseX - x) / 68.0, 0, 1);
             double current = percentage * (max - min) + min;
             argument.setValue(current);
         }

@@ -1,6 +1,6 @@
 package io.github.floatingpointmc.client.nextgen.module.impl.render;
 
-import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.EntityTickedEvent;
 import io.github.floatingpointmc.client.nextgen.event.impl.render.Render2DEvent;
 import io.github.floatingpointmc.client.nextgen.language.LanguageManager;
 import io.github.floatingpointmc.client.nextgen.module.Category;
@@ -8,7 +8,9 @@ import io.github.floatingpointmc.client.nextgen.module.Module;
 import io.github.floatingpointmc.client.nextgen.module.ModuleRegistry;
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.CheckBox;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.RangeSlider;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.Slider;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.Colors;
 import io.github.floatingpointmc.client.nextgen.ui.font.FontRegistry;
 import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
@@ -19,10 +21,12 @@ import io.github.vlouboos.standaloneevent.api.EventHandler;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 
 public class ModuleList extends Module {
+    private static final DecimalFormat formatter = new DecimalFormat("#.####");
     private final CheckBox noRenderModule = new CheckBox("norendermodule", true);
     private ArrayList<RenderEntry> renderModules;
 
@@ -43,7 +47,7 @@ public class ModuleList extends Module {
     }
 
     @EventHandler
-    public void onUpdate(@NotNull TickEvent e) {
+    public void onUpdate(@NotNull EntityTickedEvent e) {
         for (RenderEntry renderEntry : renderModules) {
             renderEntry.update();
         }
@@ -114,8 +118,14 @@ public class ModuleList extends Module {
             float moduleWidth = FontRegistry.GEIST_BOLD.width(name, 6) + 16;
             Argument<?> suffix = module.getSuffix();
             if (suffix != null) {
-                if (suffix instanceof SelectionList selectionList) {
-                    this.suffix = LanguageManager.get("module.%s.%s.%s".formatted(module.getIdentity(), selectionList.identity, selectionList.getValue()));
+                switch (suffix) {
+                    case SelectionList selectionList ->
+                            this.suffix = LanguageManager.get("module.%s.%s.%s".formatted(module.getIdentity(), selectionList.identity, selectionList.getValue()));
+                    case CheckBox checkBox -> this.suffix = checkBox.getValue() ? "Enabled" : "Disabled";
+                    case Slider slider -> this.suffix = formatter.format(slider.getValue());
+                    case RangeSlider rangeSlider -> this.suffix = formatter.format(rangeSlider.getMinValue()) + "-" + formatter.format(rangeSlider.getMaxValue());
+                    default -> {
+                    }
                 }
                 suffixWidth = moduleWidth - 11;
                 moduleWidth += FontRegistry.GEIST_BOLD.width(this.suffix, 6) + 6;

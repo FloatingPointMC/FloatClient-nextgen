@@ -18,7 +18,6 @@
 
 package io.github.floatingpointmc.client.nextgen.module;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;

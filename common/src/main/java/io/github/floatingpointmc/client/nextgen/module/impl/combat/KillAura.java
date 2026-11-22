@@ -1,6 +1,7 @@
 package io.github.floatingpointmc.client.nextgen.module.impl.combat;
 
-import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.EntityTickedEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.player.PreMotionEvent;
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.module.Module;
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
@@ -28,7 +29,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedList;
 
 
 public class KillAura extends Module {
@@ -38,7 +41,7 @@ public class KillAura extends Module {
     private final CheckBox cooldown = new CheckBox("cooldown", true);
     private final RangeSlider aps = new RangeSlider("aps", 10, 10, () -> !cooldown.getValue(), 0.5, 20, 0.1);
     private final SelectionList autoBlocking = new SelectionList("autoblocking", "off", "off", "vanilla", "full");
-    private final Slider blockingRange = new Slider("blockingrange", 0, () -> !mode.isCurrent("off"), 0, 3, 0.01);
+    private final Slider blockingRange = new Slider("blockingrange", 0, () -> !autoBlocking.isCurrent("off"), 0, 3, 0.01);
     private final CheckBox rotation = new CheckBox("rotation", true, () -> !mode.isCurrent("multi"));
     private final RangeSlider rotationSpeed = new RangeSlider("rotationspeed", 180, 180, rotation::getValue, 10, 180, 10);
     private final @NotNull LinkedList<@NotNull Attackable> targets = new LinkedList<>();
@@ -50,14 +53,23 @@ public class KillAura extends Module {
         addArguments(mode, range, cooldown, aps, autoBlocking, blockingRange, rotation, rotationSpeed);
     }
 
+    @Override
+    protected void onDisable() {
+        targets.clear();
+        suspendedAttack = false;
+    }
+
     @EventHandler
-    public void onTick(TickEvent e) {
-        if (mc.level == null || mc.player == null || mc.player.isSpectator() || mc.player.isHandsBusy() || mc.gameMode == null) return;
+    public void onTick(EntityTickedEvent e) {
+        if (mc.level == null || mc.player == null || mc.player.isSpectator() || mc.player.isHandsBusy() || mc.gameMode == null)
+            return;
         Vec3 selfEye = mc.player.getEyePosition();
         ArrayList<Attackable> targets = new ArrayList<>();
+        double searchRange = range.getValue() + blockingRange.getValue();
+        searchRange *= searchRange;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (Target.notQualified(entity)) continue;
-            if (entity.distanceToSqr(selfEye) > 100) continue;
+            if (entity.distanceToSqr(selfEye) > searchRange) continue;
             if (entity instanceof LivingEntity living) {
                 targets.add(new Attackable(living, living.getHealth(), LocationUtil.closestVecTo(living, selfEye)));
             } else {
@@ -119,6 +131,7 @@ public class KillAura extends Module {
                 }
                 if (!mode.isCurrent("multi")) break;
             }
+            attackTimer.reset();
         }
     }
 
@@ -127,9 +140,14 @@ public class KillAura extends Module {
                 switch (priority.getValue()) {
                     case "distance" ->
                             Comparator.comparingDouble(target -> target.hitVec().distanceTo(self.getEyePosition()));
-                    case "fov" -> Comparator.comparing(target -> RotationUtil.getRotationOffsetToVec(target.hitVec()).yaw());
+                    case "fov" ->
+                            Comparator.comparing(target -> RotationUtil.getRotationOffsetToVec(target.hitVec()).yaw());
                     default -> Comparator.comparing(Attackable::health);
                 });
+    }
+
+    @EventHandler
+    public void onPreMotion(PreMotionEvent e) {
     }
 
     @Override

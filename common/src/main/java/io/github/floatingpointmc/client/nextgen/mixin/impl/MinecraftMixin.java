@@ -23,6 +23,7 @@ import io.github.floatingpointmc.client.nextgen.FloatClientNextgen;
 import io.github.floatingpointmc.client.nextgen.FloatMetadataResources;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.KeyEvent;
 import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.EntityTickedEvent;
 import io.github.floatingpointmc.client.nextgen.mixin.interfaces.IKeyMapping;
 import io.github.floatingpointmc.client.nextgen.util.io.KeyboardUtil;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
@@ -40,6 +41,11 @@ public class MinecraftMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick(CallbackInfo ci) {
         StandaloneEventAPI.getApi().call(new TickEvent());
+    }
+
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;tickBlockEntities()V", shift = At.Shift.AFTER))
+    private void onEntityTicked(CallbackInfo ci) {
+        StandaloneEventAPI.getApi().call(new EntityTickedEvent());
     }
 
     @Inject(method = "handleKeybinds", at = @At("HEAD"), cancellable = true)

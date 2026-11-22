@@ -21,6 +21,7 @@ package io.github.floatingpointmc.client.nextgen.ui.clickui;
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.CategoryComponent;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.TopLayer;
+import io.github.floatingpointmc.client.nextgen.util.container.Timer;
 import io.github.floatingpointmc.client.nextgen.util.math.FunctionUtil;
 import io.github.floatingpointmc.client.nextgen.util.math.MathUtil;
 import io.github.floatingpointmc.client.nextgen.util.render.BlurUtil;
@@ -37,6 +38,7 @@ import java.util.List;
 public final class ClickUI extends Screen {
     private static final @NotNull ClickUI INSTANCE;
     private static final List<CategoryComponent> categories;
+    private static final Timer mouseStopping;
     public static @Nullable TopLayer topLayer = null;
     public static @NotNull FunctionUtil<Integer> alphaAnimation = FunctionUtil.done(0);
 
@@ -47,6 +49,7 @@ public final class ClickUI extends Screen {
             categories.add(new CategoryComponent(category, x, y));
             x += 140;
         }
+        mouseStopping = new Timer();
         INSTANCE = new ClickUI();
     }
 
@@ -104,5 +107,14 @@ public final class ClickUI extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void mouseMoved(double x, double y) {
+        mouseStopping.reset();
+    }
+
+    public static boolean isStopping() {
+        return mouseStopping.isComplete(700);
     }
 }

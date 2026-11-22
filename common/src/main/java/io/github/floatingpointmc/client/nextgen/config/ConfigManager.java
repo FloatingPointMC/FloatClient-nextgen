@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 @Log4j2
-public class ConfigManager {
+public final class ConfigManager {
     private static final File dir;
 
     static {

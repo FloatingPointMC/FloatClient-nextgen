@@ -18,7 +18,7 @@
 
 package io.github.floatingpointmc.client.nextgen.util.math;
 
-import io.github.floatingpointmc.client.nextgen.event.impl.client.TickEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.EntityTickedEvent;
 import io.github.floatingpointmc.client.nextgen.event.impl.player.PreMotionEvent;
 import io.github.floatingpointmc.client.nextgen.util.container.Rotation;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
@@ -49,7 +49,7 @@ public class RotationUtil {
     }
 
     @EventHandler(Long.MAX_VALUE)
-    public static void onTick(TickEvent event) {
+    public static void onTick(EntityTickedEvent event) {
         if (mc.player == null) return;
         active = false;
         Rotation current = new Rotation(mc.player.getYRot(), mc.player.getXRot());
@@ -98,7 +98,7 @@ public class RotationUtil {
         double yDist = vec.y - self.y;
         double zDist = vec.z - self.z;
         float yaw = (float) (Math.atan2(zDist, xDist) * Mth.RAD_TO_DEG - 90.0);
-        float pitch = (float) -(Math.atan2(Math.hypot(xDist, zDist), yDist) * Mth.RAD_TO_DEG);
+        float pitch = (float) -(Math.atan2(yDist, Math.hypot(xDist, zDist)) * Mth.RAD_TO_DEG);
         return new Rotation(yaw, pitch).offsetYaw(getPrevRotation());
     }
 

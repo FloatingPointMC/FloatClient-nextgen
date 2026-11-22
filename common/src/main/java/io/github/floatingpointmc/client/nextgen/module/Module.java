@@ -55,7 +55,7 @@ public class Module {
         this(identity, category, true);
     }
 
-    protected void addArguments(@NotNull Argument<?> @NotNull ... argument) {
+    protected final void addArguments(@NotNull Argument<?> @NotNull ... argument) {
         arguments.addAll(List.of(argument));
     }
 
@@ -67,11 +67,11 @@ public class Module {
         return null;
     }
 
-    public void setEnabled(boolean enabled) {
+    public final void setEnabled(boolean enabled) {
         setEnabled(enabled, true);
     }
 
-    public void setEnabled(boolean enabled, boolean withSound) {
+    public final void setEnabled(boolean enabled, boolean withSound) {
         assert mc.player != null;
         if (!toggleable) {
             onEnable();
@@ -96,11 +96,15 @@ public class Module {
         }
     }
 
-    public void toggle() {
+    public final void toggle() {
         setEnabled(!isEnabled());
     }
 
-    public @NotNull String getName() {
-        return LanguageManager.get("module." + identity);
+    public final @NotNull String getName() {
+        return LanguageManager.get("module.%s".formatted(identity));
+    }
+
+    public final @NotNull String getDescription() {
+        return LanguageManager.get("module.%s.desc".formatted(identity));
     }
 }

@@ -41,7 +41,11 @@ public abstract class ArgumentComponent<T extends Argument<?>> {
     }
 
     protected final String getArgumentName() {
-        return LanguageManager.get("module." + parent.getIdentity() + "." + argument.identity);
+        return LanguageManager.get("module.%s.%s".formatted(parent.getIdentity(), argument.identity));
+    }
+
+    protected final String getArgumentDescription() {
+        return LanguageManager.get("module.%s.%s.desc".formatted(parent.getIdentity(), argument.identity));
     }
 
     public void onMouseReleased(int mouseButton) {

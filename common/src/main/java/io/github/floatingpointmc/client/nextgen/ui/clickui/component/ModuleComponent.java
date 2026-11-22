@@ -21,12 +21,14 @@ package io.github.floatingpointmc.client.nextgen.ui.clickui.component;
 import io.github.floatingpointmc.client.nextgen.module.Module;
 import io.github.floatingpointmc.client.nextgen.module.argument.Argument;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.CheckBox;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.RangeSlider;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
 import io.github.floatingpointmc.client.nextgen.module.argument.impl.Slider;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.ClickUI;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.Colors;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.ArgumentComponent;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.CheckBoxComponent;
+import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.RangeSliderComponent;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.SelectionListComponent;
 import io.github.floatingpointmc.client.nextgen.ui.clickui.component.argument.impl.SliderComponent;
 import io.github.floatingpointmc.client.nextgen.ui.font.FontRegistry;
@@ -54,12 +56,13 @@ public class ModuleComponent {
         this.module = module;
         components = new ArrayList<>();
         for (Argument<?> argument : module.getArguments()) {
-            if (argument instanceof CheckBox checkBox) {
-                components.add(new CheckBoxComponent(module, checkBox));
-            } else if (argument instanceof Slider slider) {
-                components.add(new SliderComponent(module, slider));
-            } else if (argument instanceof SelectionList selectionList) {
-                components.add(new SelectionListComponent(module, selectionList));
+            switch (argument) {
+                case CheckBox checkBox -> components.add(new CheckBoxComponent(module, checkBox));
+                case Slider slider -> components.add(new SliderComponent(module, slider));
+                case SelectionList selectionList -> components.add(new SelectionListComponent(module, selectionList));
+                case RangeSlider rangeSlider -> components.add(new RangeSliderComponent(module, rangeSlider));
+                case null, default -> {
+                }
             }
         }
         expectHeight = 20;
