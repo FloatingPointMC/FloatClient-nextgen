@@ -31,6 +31,7 @@ import io.github.floatingpointmc.client.nextgen.module.argument.impl.Slider;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.KillAura;
 import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
+import io.github.floatingpointmc.client.nextgen.module.impl.movement.StrafeFix;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.HUD;
 import io.github.floatingpointmc.client.nextgen.module.impl.render.ModuleList;
@@ -65,6 +66,9 @@ public class ModuleRegistry {
                 new AntiBot(),
                 new KillAura()
         );
+        add(implementations, movementImplementations,
+                new StrafeFix()
+         );
         add(implementations, renderImplementations,
                 new ClickGUI(),
                 new HUD(),

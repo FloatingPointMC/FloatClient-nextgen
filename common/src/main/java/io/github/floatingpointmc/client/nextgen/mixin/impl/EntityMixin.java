@@ -18,10 +18,15 @@
 
 package io.github.floatingpointmc.client.nextgen.mixin.impl;
 
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.MoveEvent;
+import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
@@ -47,4 +52,12 @@ public abstract class EntityMixin {
 
     @Shadow
     public abstract Vec3 position();
+
+    @ModifyArg(method = "moveRelative", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getInputVector(Lnet/minecraft/world/phys/Vec3;FF)Lnet/minecraft/world/phys/Vec3;"), index = 2)
+    private float changeYaw(float yRot) {
+        if ((Object) this != Minecraft.getInstance().player) return yRot;
+        MoveEvent moveEvent = new MoveEvent(yRot);
+        StandaloneEventAPI.getApi().call(moveEvent);
+        return moveEvent.yaw;
+    }
 }

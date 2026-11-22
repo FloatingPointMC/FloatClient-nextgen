@@ -18,9 +18,30 @@
 
 package io.github.floatingpointmc.client.nextgen.mixin.impl;
 
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.EntityTickedEvent;
+import io.github.floatingpointmc.client.nextgen.event.impl.entity.JumpEvent;
+import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends EntityMixin {
+    @Redirect(method = "jumpFromGround", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"))
+    private float getYaw(LivingEntity entity) {
+        if (entity != Minecraft.getInstance().player) return entity.getYRot();
+        JumpEvent jumpEvent = new JumpEvent(entity.getYRot());
+        StandaloneEventAPI.getApi().call(jumpEvent);
+        return jumpEvent.yaw;
+    }
+
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V", shift = At.Shift.AFTER))
+    private void onEntityTicked(CallbackInfo ci) {
+        if ((Object) this != Minecraft.getInstance().player) return;
+        StandaloneEventAPI.getApi().call(new EntityTickedEvent());
+    }
 }

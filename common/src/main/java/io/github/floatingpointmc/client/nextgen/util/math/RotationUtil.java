@@ -54,7 +54,7 @@ public class RotationUtil {
         active = false;
         Rotation current = new Rotation(mc.player.getYRot(), mc.player.getXRot());
         if (prevRotation == null) {
-            prevRotation = current;
+            currentRotation = prevRotation = current;
             return;
         }
         Rotation offset = current.offsetYaw(prevRotation);
