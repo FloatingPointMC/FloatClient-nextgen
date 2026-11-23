@@ -7,10 +7,13 @@
     "AbstractClientPlayerMixin",
     "BlurLifecycleMixin",
     "ChatScreenMixin",
+    "GameRendererMixin",
     "GuiGraphicsExtractorMixin",
     "GuiRendererMixin",
     "HudMixin",
+    "KeyboardInputMixin",
     "KeyMappingMixin",
+    "LevelRendererMixin",
     "LocalPlayerMixin",
     "MinecraftMixin"
   ],

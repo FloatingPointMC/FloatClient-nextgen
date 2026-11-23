@@ -1,10 +1,12 @@
 lang.name=English (US)
+# Categories
 category.combat=Combat
 category.movement=Movement
 category.render=Render
 category.player=Player
 category.world=World
 category.misc=Misc
+# Combat Modules
 module.aimassist=Aim Assist
 module.aimassist.desc=Force your crosshair on a target.
 module.antibot=Anti Bot
@@ -43,7 +45,44 @@ module.killaura.rotationspeed=Rotation Speed
 module.killaura.rotationspeed.desc=The speed of rotation.
 module.reach=Reach
 module.reach.desc=Increase your reach.
-module.targetstrafe=Target Strafe
-module.targetstrafe.desc=Strafe yourself to avoid target's aiming.
 module.velocity=Velocity
 module.velocity.desc=Modify the velocity when you get hit.
+# Movement Modules
+module.strafefix=Strafe Fix
+module.strafefix.desc=Fix your movement according to your real rotation.
+module.strafefix.adapt=Adapt
+module.strafefix.adapt.desc=Adapt your movement according to your camera.
+module.targetstrafe=Target Strafe
+module.targetstrafe.desc=Strafe yourself to avoid target's aiming.
+# Render Modules
+module.clickgui=ClickGUI
+module.clickgui.desc=A screen allows you to modify arguments like now.
+module.esp=ESP
+module.esp.desc=Highlight targets.
+module.esp.mode=Mode
+module.esp.mode.desc=The highlight mode.
+module.esp.mode.box=Box
+module.esp.mode.2d=2D
+module.hud=HUD
+module.hud.desc=Head-up display.
+module.modulelist=Module List
+module.modulelist.desc=Display enabled modules.
+module.nohurtcam=No Hurt Cam
+module.nohurtcam.desc=Disable the bobbing when you get hurt.
+module.rotation=Rotation
+module.rotation.desc=Show your real rotation.
+# Misc Modules
+module.target=Target
+module.target.desc=Filter the targets.
+module.target.invisible=Invisible
+module.target.invisible.desc=Consider invisible entities as targets.
+module.target.player=Player
+module.target.player.desc=Consider players as targets.
+module.target.mob=Mob
+module.target.mob.desc=Consider mobs as targets.
+module.target.animal=Animal
+module.target.animal.desc=Consider animals as targets.
+module.target.villager=Villager
+module.target.villager.desc=Consider villagers as targets.
+module.target.fireball=Fireball
+module.target.fireball.desc=Consider fireballs as targets.

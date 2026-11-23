@@ -31,7 +31,7 @@ public class ModuleList extends Module {
     private ArrayList<RenderEntry> renderModules;
 
     public ModuleList() {
-        super("Module List", Category.RENDER);
+        super("modulelist", Category.RENDER);
         addArguments(noRenderModule);
         ModuleRegistry.enable(this);
     }

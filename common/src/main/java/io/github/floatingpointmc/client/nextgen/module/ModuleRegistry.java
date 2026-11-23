@@ -32,10 +32,7 @@ import io.github.floatingpointmc.client.nextgen.module.impl.combat.AntiBot;
 import io.github.floatingpointmc.client.nextgen.module.impl.combat.KillAura;
 import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
 import io.github.floatingpointmc.client.nextgen.module.impl.movement.StrafeFix;
-import io.github.floatingpointmc.client.nextgen.module.impl.render.ClickGUI;
-import io.github.floatingpointmc.client.nextgen.module.impl.render.HUD;
-import io.github.floatingpointmc.client.nextgen.module.impl.render.ModuleList;
-import io.github.floatingpointmc.client.nextgen.module.impl.render.Rotation;
+import io.github.floatingpointmc.client.nextgen.module.impl.render.*;
 import io.github.vlouboos.standaloneevent.api.EventHandler;
 import io.github.vlouboos.standaloneevent.api.StandaloneEventAPI;
 import it.unimi.dsi.fastutil.objects.*;
@@ -71,8 +68,10 @@ public class ModuleRegistry {
          );
         add(implementations, renderImplementations,
                 new ClickGUI(),
+                new ESP(),
                 new HUD(),
                 new ModuleList(),
+                new NoHurtCam(),
                 new Rotation()
         );
         add(implementations, miscImplementations,

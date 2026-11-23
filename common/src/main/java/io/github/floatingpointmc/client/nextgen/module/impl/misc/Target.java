@@ -31,10 +31,9 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 
-public class
-Target extends Module {
+public class Target extends Module {
+    private static final CheckBox invisible = new CheckBox("invisible", true);
     private static final CheckBox player = new CheckBox("player", true);
-    private static final CheckBox invisible = new CheckBox("invisible", true, player::getValue);
     private static final CheckBox mob = new CheckBox("mobs", true);
     private static final CheckBox animal = new CheckBox("animal", true);
     private static final CheckBox villager = new CheckBox("villager", true);
@@ -42,7 +41,7 @@ Target extends Module {
 
     public Target() {
         super("target", Category.MISC, false);
-        addArguments(player, invisible, mob, animal, villager, fireball);
+        addArguments(invisible, player, mob, animal, villager, fireball);
     }
 
     public static boolean notQualified(Entity entity) {

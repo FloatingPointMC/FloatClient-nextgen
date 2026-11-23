@@ -18,11 +18,48 @@
 
 package io.github.floatingpointmc.client.nextgen.module.impl.render;
 
+import io.github.floatingpointmc.client.nextgen.event.impl.render.Render3DEvent;
 import io.github.floatingpointmc.client.nextgen.module.Category;
 import io.github.floatingpointmc.client.nextgen.module.Module;
+import io.github.floatingpointmc.client.nextgen.module.argument.impl.SelectionList;
+import io.github.floatingpointmc.client.nextgen.module.impl.misc.Target;
+import io.github.floatingpointmc.client.nextgen.util.render.RenderUtil;
+import io.github.vlouboos.standaloneevent.api.EventHandler;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class ESP extends Module {
+    private final SelectionList mode = new SelectionList("mode", "box", "box", "2d");
+
     public ESP() {
         super("esp", Category.RENDER);
+        addArguments(mode);
+    }
+
+    @EventHandler
+    public void onRender3D(Render3DEvent event) {
+        assert mc.level != null;
+        switch (mode.getValue()) {
+            case "box"-> {
+                for (Entity entity : mc.level.entitiesForRendering()) {
+                    if (Target.notQualified(entity)) continue;
+                    AABB box = entity.getBoundingBox();
+                    float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+                    Vec3 interpolatedPosition = entity.getPosition(partialTick);
+                    Vec3 currentPosition = entity.position();
+                    double centerX = interpolatedPosition.x - currentPosition.x;
+                    double centerY = interpolatedPosition.y - currentPosition.y;
+                    double centerZ = interpolatedPosition.z - currentPosition.z;
+                    RenderUtil.drawBoundingBox(box.move(centerX, centerY, centerZ), 0xFFFFFFFF, 0x3DFFFFFF);
+                }
+            }
+            case "2d"-> {
+                for (Entity entity : mc.level.entitiesForRendering()) {
+                    if (Target.notQualified(entity)) continue;
+                    RenderUtil.draw2DESPOnEntity(entity, 0xFFFFFFFF, 0);
+                }
+            }
+        }
     }
 }
