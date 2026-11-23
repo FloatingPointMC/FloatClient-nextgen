@@ -49,4 +49,9 @@ public class MathUtil {
     public static boolean isHovered(double x, double y, double x1, double y1, double mouseX, double mouseY) {
         return (x <= mouseX && mouseX <= x1 && y <= mouseY && mouseY <= y1);
     }
+
+    public static int impulse(boolean positive, boolean negative) {
+        if (positive == negative) return 0;
+        return positive ? 1 : -1;
+    }
 }
